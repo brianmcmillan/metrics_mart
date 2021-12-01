@@ -1,0 +1,5 @@
+csvkit >= 1.0.5
+sqlite-utils >= 3.3
+datasette >=0.54.1
+datasette-vega >= 0.6.2
+datasette-copyable >= 0.3.1
