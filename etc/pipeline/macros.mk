@@ -48,8 +48,8 @@ define record_count_csv
 endef
 
 define update_file_modified_date
-	@#touch_src/<generalized_file_name>(colon)(space)<path/to/file.xyz>
-	@touch $^ && echo [INFO] - Manually updating [$^] file date.
+	@touch $< \
+	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Updating file modification date for $< to $(shell date -r $< +"%Y-%m-%dT%H:%M:%SZ") \" 
 endef
 
 

@@ -42,7 +42,7 @@ test_macro: \
 test_dir_pass test_dir_fail test_dir test_dir_macro \
 etc/test/file_001.csv etc/test/file_001b.csv etc/test/file_001c.csv \
 etc/test/file_002.csv etc/test/file_003.csv test_dependent_file file_compare_pass \
-file_compare_fail file_compare_macro record_count_csv
+file_compare_fail file_compare_macro record_count_csv update_file_modified_date_macro
 
 #etc/pipeline/unit_test.mk etc/pipeline/unit_test.mk2 test_dependent_file \
 test_dependent_file_fail file_compare file_compare_fail record_count_csv
@@ -120,8 +120,14 @@ record_count_csv: mock/file_004.csv
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"record count $(PATH) is $(shell wc -l < $(PATH)) not $(EXPECTED)\"  
 
+update_file_modified_date: etc/test/file_004.csv
+	@date -r $< +"%Y-%m-%dT%H:%M:%SZ" 
+	@touch $<
+	@date -r $< +"%Y-%m-%dT%H:%M:%SZ" 
 
-
+update_file_modified_date_macro: etc/test/file_004.csv
+	@touch $< \
+	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Updating file modification date for $< to $(shell date -r $< +"%Y-%m-%dT%H:%M:%SZ")\" 
 
 
 #update_file_modified_date
