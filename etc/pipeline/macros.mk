@@ -40,21 +40,21 @@ endef
 
 define record_count_csv
 	@#metrics/<csv_file.csv>(colon)(space)PATH = "<path/to/file.csv>"
-	record_count_csv: EXPECTED=<total row count>
+	@#record_count_csv: EXPECTED=<total row count>
 	@#metrics/<csv_file.csv>(colon)(space)
 	@[[ $(shell wc -l < $(PATH)) == $(EXPECTED) ]] \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"record count $(PATH) is $(shell wc -l < $(PATH)) not $(EXPECTED)\"  
 endef
 
-
-
-
-
 define update_file_modified_date
-	@#touch_src/<generalized_file_identifier>(colon)(space)<path/to/file.xyz>
+	@#touch_src/<generalized_file_name>(colon)(space)<path/to/file.xyz>
 	@touch $^ && echo [INFO] - Manually updating [$^] file date.
 endef
+
+
+
+
 
 define test_table
 	@#test_table/<table_name>(colon)

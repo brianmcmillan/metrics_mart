@@ -1,7 +1,7 @@
 ################################################################################
 # Unit Tests - etc/pipeline/unit_tests.mk                                      #
 ################################################################################
-unit_tests: macro_tests
+unit_tests: mock_data test_macro
 
 .PHONY: mock/file_001.csv mock/file_002.csv etc1/ \
 etc/pipe/ etc/pipeline/unit_test.mk etc/pipeline/unit_test.mk2
@@ -119,6 +119,9 @@ record_count_csv: mock/file_004.csv
 	@[[ $(shell wc -l < $(PATH)) == $(EXPECTED) ]] \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"record count $(PATH) is $(shell wc -l < $(PATH)) not $(EXPECTED)\"  
+
+
+
 
 
 #update_file_modified_date
