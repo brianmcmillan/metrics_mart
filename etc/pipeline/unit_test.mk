@@ -129,43 +129,48 @@ update_file_modified_date_macro: etc/test/file_004.csv
 	@touch $< \
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Updating file modification date for $< to $(shell date -r $< +"%Y-%m-%dT%H:%M:%SZ")\" 
 
+#split_csv
 
-#update_file_modified_date
+
+
+
+
+
+
 
 #extract_csv_from_excel
-
-#split_csv
 
 #load_csv_into_database
 
 #test_database
 
-#create_table
-
 #test_table
-
-#execute_sql
 
 #record_count_table
 
+#execute_sql
+
 #execute_sql_export_csv
 
-#sql_template_from_csv
+#create_table
 
-#table_metadata
 
-#compact_database
-
-#er_diagram
 
 #vega_report_from_api
 
 #vega_report_from_file
 
-#log_rotate
+
+#sql_template_from_csv
+
+
 
 #help
 
+#er_diagram
 
+#table_metadata
 
+#log_rotate
 
+#compact_database

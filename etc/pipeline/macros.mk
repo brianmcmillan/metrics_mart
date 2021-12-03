@@ -52,7 +52,14 @@ define update_file_modified_date
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Updating file modification date for $< to $(shell date -r $< +"%Y-%m-%dT%H:%M:%SZ") \" 
 endef
 
-
+define split_csv
+	@#<split/file_group_description>(colon)(space) path/to/source_file.csv
+	@echo $(DTS)     [INFO] - Splitting $< into $(TARGETDIR)$(TARGETNAME)_###
+	@mkdir -p svc/load/$(@F)/ svc/load/split_$(@F)/
+	@$(SPLIT) -d -a 3 -l 50000 --additional-suffix=".csv" \
+	$< svc/load/split_$(@F)/$(basename $(<F))_
+	@wc -l svc/load/split_$(@F)/*.csv
+endef
 
 
 
@@ -202,11 +209,3 @@ define help
 	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 endef
 
-define split_csv
-	@#<split/file_group_description>(colon)(space) path/to/source_file.csv
-	@echo $(DTS)     [INFO] - Splitting $< into $(TARGETDIR)$(TARGETNAME)_###
-	@mkdir -p svc/load/$(@F)/ svc/load/split_$(@F)/
-	@$(SPLIT) -d -a 3 -l 50000 --additional-suffix=".csv" \
-	$< svc/load/split_$(@F)/$(basename $(<F))_
-	@wc -l svc/load/split_$(@F)/*.csv
-endef
