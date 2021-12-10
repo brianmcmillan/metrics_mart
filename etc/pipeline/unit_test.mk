@@ -130,6 +130,17 @@ update_file_modified_date_macro: etc/test/file_004.csv
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Updating file modification date for $< to $(shell date -r $< +"%Y-%m-%dT%H:%M:%SZ")\" 
 
 #split_csv
+split/file_004: SOURCEDIR="etc/test/"
+split/file_004: TARGETDIR="etc/test/load/split_$(@F)/"
+split/file_004: TARGETNAME="$(basename $(<F))_"
+split/file_004: SPLITSIZE=2
+split/file_004: etc/test/file_004.csv
+	@mkdir -p $(SOURCEDIR) $(TARGETDIR)
+	@$(SPLIT) -d -a 3 -l $(SPLITSIZE) --additional-suffix=".csv" $< $(TARGETDIR)/$(TARGETNAME)
+	@[[ $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) == $(SPLITSIZE) ]] \
+	&& true \
+	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"record count $(TARGETDIR)$(TARGETNAME)000.csv is $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) not $(SPLITSIZE)\"  
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]     $@    \"$(shell wc -l $(TARGETDIR)*.csv)\"
 
 
 

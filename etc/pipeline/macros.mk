@@ -53,12 +53,17 @@ define update_file_modified_date
 endef
 
 define split_csv
+	@#<split/file_group_description>(colon)(space) SOURCEDIR=path/to/source_directory
+	@#<split/file_group_description>(colon)(space) TARGETDIR=path/to/target_directory
+	@#<split/file_group_description>(colon)(space) TARGETNAME=file_name_
+	@#<split/file_group_description>(colon)(space) SPLITSIZE=number_of_rows
 	@#<split/file_group_description>(colon)(space) path/to/source_file.csv
-	@echo $(DTS)     [INFO] - Splitting $< into $(TARGETDIR)$(TARGETNAME)_###
-	@mkdir -p svc/load/$(@F)/ svc/load/split_$(@F)/
-	@$(SPLIT) -d -a 3 -l 50000 --additional-suffix=".csv" \
-	$< svc/load/split_$(@F)/$(basename $(<F))_
-	@wc -l svc/load/split_$(@F)/*.csv
+	@mkdir -p $(SOURCEDIR) $(TARGETDIR)
+	@$(SPLIT) -d -a 3 -l $(SPLITSIZE) --additional-suffix=".csv" $< $(TARGETDIR)/$(TARGETNAME)
+	@[[ $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) == $(SPLITSIZE) ]] \
+	&& true \
+	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"record count $(TARGETDIR)$(TARGETNAME)000.csv is $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) not $(SPLITSIZE)\"  
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]     $@    \"$(shell wc -l $(TARGETDIR)*.csv)\"
 endef
 
 
