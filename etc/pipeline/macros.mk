@@ -58,6 +58,7 @@ define split_csv
 	@#<split/file_group_description>(colon)(space) TARGETNAME=file_name_
 	@#<split/file_group_description>(colon)(space) SPLITSIZE=number_of_rows
 	@#<split/file_group_description>(colon)(space) path/to/source_file.csv
+	@echo $(DTS)     [INFO] - Splitting $< into $@
 	@mkdir -p $(SOURCEDIR) $(TARGETDIR)
 	@$(SPLIT) -d -a 3 -l $(SPLITSIZE) --additional-suffix=".csv" $< $(TARGETDIR)/$(TARGETNAME)
 	@[[ $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) == $(SPLITSIZE) ]] \
@@ -65,6 +66,23 @@ define split_csv
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"record count $(TARGETDIR)$(TARGETNAME)000.csv is $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) not $(SPLITSIZE)\"  
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]     $@    \"$(shell wc -l $(TARGETDIR)*.csv)\"
 endef
+
+define extract_csv_from_excel
+	@#<path/to/csv_file.csv>(colon)(space)HEADER="source_line_number,provider_code,load_dts,<fields,in,source,file>"
+	@#<path/to/csv_file.csv>(colon)(space)TABNAME = "<name of XLS worksheet>"
+	@#<path/to/csv_file.csv>(colon)(space)<path/to/source/excel_file.xlsx>
+	@echo $(DTS)     [INFO] - Extracting data from $< [$(TABNAME)] into $@
+	@$(IN2CSV) -f xlsx --sheet $(TABNAME) $< > tmp/$(basename $(<F)).tmp
+	@echo $(HEADER) > $@	
+	@(awk -v OFS=',' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '{if (NR!=1) { print NR, FILENAME, date, $$0 }}' tmp/$(basename $(<F)).tmp) >> $@
+	@rm -f tmp/$(basename $(<F)).tmp
+	@$(test_file)
+endef
+
+
+
+
+
 
 
 
@@ -88,17 +106,7 @@ endef
 
 
 
-define extract_csv_from_excel
-	@#<path/to/csv_file.csv>(colon)(space)TABNAME = "<name of XLS worksheet>"
-	@#<path/to/csv_file.csv>(colon)(space)<path/to/source/excel_file.xlsx>
-	@echo $(DTS)     [INFO] - Extracting data from $< [$(TABNAME)] into $@
-	@$(IN2CSV) -f xlsx --sheet $(TABNAME) $< > $@
-	@$(CSVSTACK) -n load_dts -g $(DTS) $@ > tmp/$(@F)_1.tmp
-	@$(CSVSTACK) -n provider_code -g $@ tmp/$(@F)_1.tmp > tmp/$(@F)_2.tmp
-	@mv tmp/$(@F)_2.tmp $@
-	@rm tmp/$(@F)_1.tmp
-	@$(test_file)
-endef
+
 
 define execute_sql_export_csv
 	@#<path/to/export_file.csv>(colon)(space)<path/to/query.sql>
