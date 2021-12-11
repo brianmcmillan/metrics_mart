@@ -159,7 +159,7 @@ svc/load/SensorPush/OUTDOOR_02.csv: unzip/SensorPush/OUTDOOR_01/SensorPushData
 	@if test -s $@; \
 	then echo $(HEADER) > $@ \
 	&& (awk -v OFS=',' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '{if (NR!=1) { print NR, FILENAME, date, $$0 }}' $(wildcard svc/load/SensorPush/OUTDOOR_01/*.csv)) >> $@; \
-	else echo $(DTS)     [WARNING2] - $(SOURCE) file does not exist; fi
+	else echo $(DTS)     [WARNING] - $(SOURCE) file does not exist; fi
 	#rm -f $(wildcard svc/load/SensorPush/OUTDOOR_01/Outdoor_01-starts-*.csv)
 	#mkdir -p tmp/$(basename $(@F)) && mv -f $(SOURCE) tmp/$(basename $(@F))
 	#$(test_file)
