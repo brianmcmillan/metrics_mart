@@ -64,9 +64,6 @@ etc/test/file_002.csv etc/test/file_003.csv test-dependent-file file-compare-pas
 file-compare-fail file-compare-macro record-count-csv update-file-modified-date-macro \
 split-file_004 etc/test/file_005.csv
 
-#etc/pipeline/unit_test.mk etc/pipeline/unit_test.mk2 test-dependent_file \
-test-dependent_file_fail file_compare file-compare-fail record-count-csv
-
 .PHONY: split-file_004
 
 test-dir-pass: etc/
@@ -155,20 +152,18 @@ split-file_004: TARGETNAME=$(basename $(<F))_
 split-file_004: SPLITSIZE=2
 split-file_004: etc/test/file_004.csv
 	@mkdir -p $(TARGETDIR)
-	@$(SPLIT) -d -a 3 -l $(SPLITSIZE) --additional-suffix=".csv" $< $(TARGETDIR)$(TARGETNAME)
-	@[[ $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) == $(SPLITSIZE) ]] \
-	&& true \
-	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"row count $(TARGETDIR)$(TARGETNAME)000.csv is $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) not $(SPLITSIZE)\"  
-	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]     $@    \"$(shell wc -l $(TARGETDIR)*.csv)\"
+	@$(SPLIT) -d -a 3 -l $(SPLITSIZE) --additional-suffix=".csv" $< $(TARGETDIR)$(TARGETNAME) \
+	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Splitting file $< by $(SPLITSIZE) lines\" 
+	@$(test-dependent-file)
 
 #extract_csv_from_excel
 etc/test/file_005.csv: TABNAME = "file_004"
 etc/test/file_005.csv: etc/test/file_004.xlsx
 	@$(IN2CSV) -f xlsx --sheet $(TABNAME) $< > tmp/$(basename $(<F)).tmp
-	@cat tmp/$(basename $(<F)).tmp | awk -v OFS=',' '{if (NR==1) {print "source_line_number", "provider_code", "load_dts", $0}}' >> $@	
-	#@(awk -v OFS=',' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '{if (NR!=1) { print NR, FILENAME, date, $$0 }}' tmp/$(basename $(<F)).tmp) > $@
-	#@rm -f tmp/$(basename $(<F)).tmp
-	#@$(test-file)
+	@cat tmp/$(basename $(<F)).tmp | awk -v OFS=',' '{if (NR==1) {print "source_line_number", "provider_code", "load_dts", $$0}}' > $@	
+	@(awk -v OFS=',' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -v source=$<::$(TABNAME) '{if (NR!=1) { print NR, source, date, $$0 }}' tmp/$(basename $(<F)).tmp) >> $@
+	@rm -f tmp/$(basename $(<F)).tmp
+	@$(test-file)
 
 
 
