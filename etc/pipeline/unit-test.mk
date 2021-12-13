@@ -66,6 +66,8 @@ etc/test/FILE_005_001_create.sql:
 	@echo "date VARCHAR," >> $@ 
 	@echo "value VARCHAR);" >> $@ 
 
+etc/test/FILE_005_001_query_001.sql: 
+	@echo "SELECT MAX(source_line_number) FROM SRC_file_005_001;" > $@
 
 
 
@@ -77,7 +79,7 @@ etc/test/file_002.csv etc/test/file_003.csv test-dependent-file file-compare-pas
 file-compare-fail file-compare-macro record-count-csv update-file-modified-date-macro \
 split-file_004 etc/test/file_005.csv \
 load-csv-into-db-overwrite load-csv-into-db-append \
-test-database test-table record-count-table create-table
+test-database test-table record-count-table create-table execute-sql
 
 .PHONY: split-file_004
 
@@ -220,7 +222,7 @@ test-database: etc/test/test.db
 #test-table
 test-table: TABLE=SRC_file_005_001
 test-table: etc/test/test.db
-	@#test-<table_name>(colon)(space)TABLENAME=<table_name>
+	@#test-<table_name>(colon)(space)TABLE=<table_name>
 	@#test-<table_name>(colon)(space)<path/to/database.db>
 	@[[ $(shell $(SQLITE3) $< ".tables $(TABLE)" ".quit") == $(TABLE) ]] \
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Table $(TABLE) exists\" \
@@ -235,18 +237,24 @@ record-count-table: etc/test/test.db
 	"SELECT COUNT(*) || ' records in $<::$(TABLE)' FROM [$(TABLE)]" ".quit")\"
 
 #create-table
-create-table: DBFILEPATH=etc/test/test.db
-create-table: TABLE=FILE_005_001
-create-table: etc/test/FILE_005_001_create.sql etc/test/test.db
-	@#create-<table_name>(colon)(space)DBFILEPATH=<path/to/database_name.db>
-	@#create-<table_name>(colon)(space)TABLENAME=<table_name>
-	@#create-<table_name>(colon)(space)<path/to/<table_name>_create.sql> [<path/to/database.db>]
-	@$(SQLITE3) $(DBFILEPATH) ".read $<" ".quit"
-	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created table $(TABLE) in $(DBFILEPATH)\"
-
-
+#create-table: DBFILEPATH=etc/test/test.db
+#create-table: TABLE=FILE_005_001
+#create-table: etc/test/FILE_005_001_create.sql etc/test/test.db
+#	@#create-<table_name>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+#	@#create-<table_name>(colon)(space)TABLENAME=<table_name>
+#	@#create-<table_name>(colon)(space)<path/to/<table_name>_create.sql> [<path/to/database.db>]
+#	@$(SQLITE3) $(DBFILEPATH) ".read $<" ".quit"
+#	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created table $(TABLE) in $(DBFILEPATH)\"
 
 #execute-sql
+execute-sql: DBFILEPATH=etc/test/test.db
+execute-sql: etc/test/FILE_005_001_query_001.sql etc/test/test.db
+	@#create-<table_name>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#create-<table_name>(colon)(space)<path/to/<query_file>.sql> [<path/to/database.db> <dependent tables>]
+	@$(SQLITE3) $(DBFILEPATH) ".read $<" ".quit"
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< on $(DBFILEPATH)\"
+
+
 
 #execute_sql_export_csv
 

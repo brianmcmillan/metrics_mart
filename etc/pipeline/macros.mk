@@ -121,14 +121,20 @@ define record-count-table
 	"SELECT COUNT(*) || ' records in $<::$(TABLE)' FROM [$(TABLE)]" ".quit")\"
 endef
 
-define create-table
-	@#create-<table_name>(colon)(space)DBFILEPATH=<path/to/database_name.db>
-	@#create-<table_name>(colon)(space)TABLENAME=<table_name>
-	@#create-<table_name>(colon)(space)<path/to/<table_name>_create.sql> [<path/to/database.db>]
-	@$(SQLITE3) $(DBFILEPATH) ".read $<" ".quit"
-	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created table $(TABLE) in $(DBFILEPATH)\"
-endef
+#define create-table
+#	@#create-<table_name>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+#	@#create-<table_name>(colon)(space)TABLENAME=<table_name>
+#	@#create-<table_name>(colon)(space)<path/to/<table_name>_create.sql> [<path/to/database.db>]
+#	@$(SQLITE3) $(DBFILEPATH) ".read $<" ".quit"
+#	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created table $(TABLE) in $(DBFILEPATH)\"
+#endef
 
+define execute_sql
+	@#create-<table_name>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#create-<table_name>(colon)(space)<path/to/<query_file>.sql> [<path/to/database.db> <dependent tables>]
+	@$(SQLITE3) $(DBFILEPATH) ".read $<" ".quit"
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< on $(DBFILEPATH)\"
+endef
 
 
 define execute_sql_export_csv
@@ -141,11 +147,7 @@ endef
 
 
 
-define execute_sql
-	@#<table_name>(colon)(space) <path/to/sql_file.sql> [<dependent_table_name(s)>]
-	@echo $(DTS)    [INFO] - Executing $<
-	@$(SQLITE3) $(DBFILE) ".read $<" ".quit"
-endef
+
 
 define vega_report_from_api
 	@#<path/to/export_file.html>(colon)(space)VIZTITLE=<report title>
