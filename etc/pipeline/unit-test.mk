@@ -1,45 +1,48 @@
 ################################################################################
 # Unit Tests - etc/pipeline/unit_tests.mk                                      #
 ################################################################################
-unit_tests: mock_data test_macro
+unit-tests: mock-uninstalldirs mock-data test-macro
 
-.PHONY: mock/file_001.csv mock/file_002.csv etc1/ \
+.PHONY: mock-file_001.csv mock-file_002.csv etc1/ \
 etc/pipe/ etc/pipeline/unit_test.mk etc/pipeline/unit_test.mk2
 
-#### Data Mocks ####
-mock_data: mock/file_001.csv mock/file_002.csv mock/file_003.csv mock/file_003a.csv \
-mock/file_004.csv mock/file_004.xlsx
+mock-uninstalldirs:
+	@rm -rf etc/test/* tmp/*
 
-mock/file_001.csv: PATH=etc/test/file_001.csv
-mock/file_001.csv: .FORCE
+#### Data Mocks ####
+mock-data: mock-file_001.csv mock-file_002.csv mock-file_003.csv mock-file_003a.csv \
+mock-file_004.csv mock-file_004.xlsx
+
+mock-file_001.csv: PATH=etc/test/file_001.csv
+mock-file_001.csv: .FORCE
 	@echo "text,date,value" > $(PATH) 
 	@echo "One,2021-11-08T21:00:00Z,1.00" >> $(PATH) 
 
-mock/file_002.csv: PATH=etc/test/file_002.csv
-mock/file_002.csv: .FORCE
+mock-file_002.csv: PATH=etc/test/file_002.csv
+mock-file_002.csv: .FORCE
 	@echo "text,date,value" > $(PATH)  
 	@echo "Two,2021-11-08T22:00:00Z,2.00" >> $(PATH) 
 
-mock/file_003.csv: PATH=etc/test/file_003.csv
-mock/file_003.csv: .FORCE
+mock-file_003.csv: PATH=etc/test/file_003.csv
+mock-file_003.csv: .FORCE
 	@echo "text,date,value" > $(PATH)  
 	@echo "Three,2021-11-08T23:00:00Z,3.00" >> $(PATH) 
 
-mock/file_003a.csv: PATH=etc/test/file_003a.csv
-mock/file_003a.csv: .FORCE
+mock-file_003a.csv: PATH=etc/test/file_003a.csv
+mock-file_003a.csv: .FORCE
 	@echo "text,date,value" > $(PATH)  
 	@echo "Three,2021-11-08T23:00:00Z,3.00" >> $(PATH) 	
 
-mock/file_004.csv: PATH=etc/test/file_004.csv
-mock/file_004.csv: .FORCE
+mock-file_004.csv: PATH=etc/test/file_004.csv
+mock-file_004.csv: .FORCE
 	@echo "text,date,value" > $(PATH)  
 	@echo "One,2021-11-08T21:00:00Z,1.00" >> $(PATH) 
 	@echo "Two,2021-11-08T22:00:00Z,2.00" >> $(PATH) 
 	@echo "Three,2021-11-08T23:00:00Z,3.00" >> $(PATH) 
 
-mock/file_004.xlsx: SOURCE=etc/test/file_004.base64
-mock/file_004.xlsx: TARGET=etc/test/file_004.xlsx
-mock/file_004.xlsx: .FORCE
+mock-file_004.xlsx: SOURCE=etc/test/file_004.base64
+mock-file_004.xlsx: TARGET=etc/test/file_004.xlsx
+mock-file_004.xlsx: .FORCE
 	@echo "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\
@@ -54,120 +57,118 @@ mock/file_004.xlsx: .FORCE
 	@rm $(SOURCE)
 
 #### Macro tests ####
-test_macro: \
-test_dir_pass test_dir_fail test_dir test_dir_macro \
+test-macro: \
+test-dir-pass test-dir-fail test-dir test-dir-macro \
 etc/test/file_001.csv etc/test/file_001b.csv etc/test/file_001c.csv \
-etc/test/file_002.csv etc/test/file_003.csv test_dependent_file file_compare_pass \
-file_compare_fail file_compare_macro record_count_csv update_file_modified_date_macro \
-split/file_004 etc/test/file_005.csv
+etc/test/file_002.csv etc/test/file_003.csv test-dependent-file file-compare-pass \
+file-compare-fail file-compare-macro record-count-csv update-file-modified-date-macro \
+split-file_004 etc/test/file_005.csv
 
-#etc/pipeline/unit_test.mk etc/pipeline/unit_test.mk2 test_dependent_file \
-test_dependent_file_fail file_compare file_compare_fail record_count_csv
+#etc/pipeline/unit_test.mk etc/pipeline/unit_test.mk2 test-dependent_file \
+test-dependent_file_fail file_compare file-compare-fail record-count-csv
 
-.PHONY: etc2/
+.PHONY: split-file_004
 
-test_dir_pass: etc/
+test-dir-pass: etc/
 	@[[ -d $< ]] \
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [PASS]    $@    \"testing for $< found $?\" \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"testing for $< did not find $?\" 
 
-test_dir_fail: etc1/
+test-dir-fail: etc1/
 	@[[ -d $< ]] \
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"testing for $< found $?\" \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [PASS]    $@    \"testing for $</ did not find $?\" 
 
-test_dir: etc/
+test-dir: etc/
 	@[[ -d $< ]] \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"testing for $< did not find $?\" 
 
-test_dir_macro: etc/
-	$(test_dir)
+test-dir-macro: etc/
+	$(test-dir)
 
-etc/test/file_001.csv: NAME = test_file_pass
-etc/test/file_001.csv: mock/file_001.csv
+etc/test/file_001.csv: NAME = test-file_pass
+etc/test/file_001.csv: mock-file_001.csv
 	@[[ -f $@ ]] \
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [PASS]    $(NAME)     \"testing for $@ found $@\" \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $(NAME)     \"testing for $< did not find $@\" 
 
-etc/test/file_001b.csv: NAME = test_file_fail
+etc/test/file_001b.csv: NAME = test-file_fail
 etc/test/file_001b.csv: 
 	@[[ -f $@ ]] \
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $(NAME)     \"testing for $@ found $@\" \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [PASS]    $(NAME)     \"testing for $@ did not find $@\" 
 
-etc/test/file_001c.csv: NAME = test_file_warning
+etc/test/file_001c.csv: NAME = test-file_warning
 etc/test/file_001c.csv: 
 	@[[ -f $@ ]] \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [PASS]    $(NAME)     \"testing for $@ did not find $@\" 
 
-etc/test/file_002.csv: NAME = test_file
-etc/test/file_002.csv: mock/file_002.csv
+etc/test/file_002.csv: NAME = test-file
+etc/test/file_002.csv: mock-file_002.csv
 	@[[ -f $@ ]] \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $(NAME)     \"testing for $< did not find $@\" 
 
-etc/test/file_003.csv: NAME = test_file_macro
-etc/test/file_003.csv: mock/file_003.csv
-	$(test_file)
+etc/test/file_003.csv: NAME = test-file_macro
+etc/test/file_003.csv: mock-file_003.csv
+	$(test-file)
 
-test_dependent_file: etc/test/file_001.csv
+test-dependent-file: etc/test/file_001.csv
 	@[[ -f $< ]] \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@     \"testing for $< did not find $<\" 
 
-file_compare_pass: etc/test/file_003.csv etc/test/file_003a.csv
+file-compare-pass: etc/test/file_003.csv etc/test/file_003a.csv
 	@cmp -s $(word 1,$^) $(word 2,$^) \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@     \"$(word 1,$^) is not the same as $(word 2,$^)\" 
 
-file_compare_fail: etc/test/file_002.csv etc/test/file_003.csv
+file-compare-fail: etc/test/file_002.csv etc/test/file_003.csv
 	@cmp -s $(word 1,$^) $(word 2,$^) \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [PASS]    $@     \"$(word 1,$^) is not the same as $(word 2,$^)\" 
 
-file_compare_macro: etc/test/file_003.csv etc/test/file_003a.csv
+file-compare-macro: etc/test/file_003.csv etc/test/file_003a.csv
 	@$(file_compare)
 
-record_count_csv: PATH=etc/test/file_004.csv
-record_count_csv: EXPECTED=4
-record_count_csv: mock/file_004.csv
+record-count-csv: PATH=etc/test/file_004.csv
+record-count-csv: EXPECTED=4
+record-count-csv: mock-file_004.csv
 	@[[ $(shell wc -l < $(PATH)) == $(EXPECTED) ]] \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"record count $(PATH) is $(shell wc -l < $(PATH)) not $(EXPECTED)\"  
 
-update_file_modified_date: etc/test/file_004.csv
+update-file-modified-date: etc/test/file_004.csv
 	@date -r $< +"%Y-%m-%dT%H:%M:%SZ" 
 	@touch $<
 	@date -r $< +"%Y-%m-%dT%H:%M:%SZ" 
 
-update_file_modified_date_macro: etc/test/file_004.csv
+update-file-modified-date-macro: etc/test/file_004.csv
 	@touch $< \
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Updating file modification date for $< to $(shell date -r $< +"%Y-%m-%dT%H:%M:%SZ")\" 
 
 #split_csv
-split/file_004: SOURCEDIR="etc/test/"
-split/file_004: TARGETDIR="etc/test/load/split_$(@F)/"
-split/file_004: TARGETNAME="$(basename $(<F))_"
-split/file_004: SPLITSIZE=2
-split/file_004: etc/test/file_004.csv
-	@mkdir -p $(SOURCEDIR) $(TARGETDIR)
-	@$(SPLIT) -d -a 3 -l $(SPLITSIZE) --additional-suffix=".csv" $< $(TARGETDIR)/$(TARGETNAME)
+split-file_004: TARGETDIR=etc/test/load/$@/
+split-file_004: TARGETNAME=$(basename $(<F))_
+split-file_004: SPLITSIZE=2
+split-file_004: etc/test/file_004.csv
+	@mkdir -p $(TARGETDIR)
+	@$(SPLIT) -d -a 3 -l $(SPLITSIZE) --additional-suffix=".csv" $< $(TARGETDIR)$(TARGETNAME)
 	@[[ $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) == $(SPLITSIZE) ]] \
 	&& true \
-	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"record count $(TARGETDIR)$(TARGETNAME)000.csv is $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) not $(SPLITSIZE)\"  
+	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"row count $(TARGETDIR)$(TARGETNAME)000.csv is $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) not $(SPLITSIZE)\"  
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]     $@    \"$(shell wc -l $(TARGETDIR)*.csv)\"
 
 #extract_csv_from_excel
-etc/test/file_005.csv: HEADER="source_line_number,provider_code,load_dts,text,date,value"
 etc/test/file_005.csv: TABNAME = "file_004"
 etc/test/file_005.csv: etc/test/file_004.xlsx
 	@$(IN2CSV) -f xlsx --sheet $(TABNAME) $< > tmp/$(basename $(<F)).tmp
-	@echo $(HEADER) > $@	
-	@(awk -v OFS=',' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '{if (NR!=1) { print NR, FILENAME, date, $$0 }}' tmp/$(basename $(<F)).tmp) >> $@
-	@rm -f tmp/$(basename $(<F)).tmp
-	@$(test_file)
+	@cat tmp/$(basename $(<F)).tmp | awk -v OFS=',' '{if (NR==1) {print "source_line_number", "provider_code", "load_dts", $0}}' >> $@	
+	#@(awk -v OFS=',' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '{if (NR!=1) { print NR, FILENAME, date, $$0 }}' tmp/$(basename $(<F)).tmp) > $@
+	#@rm -f tmp/$(basename $(<F)).tmp
+	#@$(test-file)
 
 
 
@@ -180,7 +181,7 @@ etc/test/file_005.csv: etc/test/file_004.xlsx
 #@$(CSVSTACK) -n provider_code -g $@ tmp/$(@F)_1.tmp > tmp/$(@F)_2.tmp
 #@mv tmp/$(@F)_2.tmp $@
 #@rm tmp/$(@F)_1.tmp
-#@$(test_file)
+#@$(test-file)
 
 
 
@@ -191,9 +192,9 @@ etc/test/file_005.csv: etc/test/file_004.xlsx
 
 #load_csv_into_database
 
-#test_database
+#test-database
 
-#test_table
+#test-table
 
 #record_count_table
 

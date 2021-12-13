@@ -17,7 +17,7 @@
 
 include etc/pipeline/config.mk
 include etc/pipeline/macros.mk
-include etc/pipeline/unit_test.mk
+include etc/pipeline/unit-test.mk
 
 ###############################################################################
 all: run ## Executes the default make task.
