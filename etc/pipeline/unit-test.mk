@@ -62,7 +62,8 @@ test-dir-pass test-dir-fail test-dir test-dir-macro \
 etc/test/file_001.csv etc/test/file_001b.csv etc/test/file_001c.csv \
 etc/test/file_002.csv etc/test/file_003.csv test-dependent-file file-compare-pass \
 file-compare-fail file-compare-macro record-count-csv update-file-modified-date-macro \
-split-file_004 etc/test/file_005.csv
+split-file_004 etc/test/file_005.csv \
+load-csv-into-db-overwrite load-csv-into-db-append
 
 .PHONY: split-file_004
 
@@ -128,7 +129,7 @@ file-compare-fail: etc/test/file_002.csv etc/test/file_003.csv
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [PASS]    $@     \"$(word 1,$^) is not the same as $(word 2,$^)\" 
 
 file-compare-macro: etc/test/file_003.csv etc/test/file_003a.csv
-	@$(file_compare)
+	@$(file-compare)
 
 record-count-csv: PATH=etc/test/file_004.csv
 record-count-csv: EXPECTED=4
@@ -146,7 +147,7 @@ update-file-modified-date-macro: etc/test/file_004.csv
 	@touch $< \
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Updating file modification date for $< to $(shell date -r $< +"%Y-%m-%dT%H:%M:%SZ")\" 
 
-#split_csv
+#split-csv
 split-file_004: TARGETDIR=etc/test/load/$@/
 split-file_004: TARGETNAME=$(basename $(<F))_
 split-file_004: SPLITSIZE=2
@@ -165,31 +166,46 @@ etc/test/file_005.csv: etc/test/file_004.xlsx
 	@rm -f tmp/$(basename $(<F)).tmp
 	@$(test-file)
 
+#load-csv-into-db-overwrite
+load-csv-into-db-overwrite: DBFILEPATH=etc/test/test.db
+load-csv-into-db-overwrite: SRC_TABLE=SRC_$(basename $(<F))_001
+load-csv-into-db-overwrite: etc/test/file_005.csv
+	@#load-<csv file>-<database>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#load-<csv file>-<database>(colon)(space)SRC_TABLE=SRC_{csv_file}_001
+	@#load-<csv file>-<database>(colon)(space)path/to/<csv_file.csv>
+	@$(CSVSQL) \
+	--db sqlite:///$(DBFILEPATH) \
+	--create-if-not-exists --overwrite \
+	--no-inference --no-constraints \
+	--chunk-size 10000 \
+	--tables $(SRC_TABLE) \
+	--insert $<
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Loading $< into $(DBFILEPATH)::$(SRC_TABLE)\" 
 
+#load-csv-into-db-append
+load-csv-into-db-append: DBFILEPATH=etc/test/test.db
+load-csv-into-db-append: SRC_TABLE=SRC_$(basename $(<F))_002
+load-csv-into-db-append: etc/test/file_005.csv
+	@#load-<csv file>-<database>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#load-<csv file>-<database>(colon)(space)<path/to/csv_file.csv>
+	@$(CSVSQL) \
+	--db sqlite:///$(DBFILEPATH) \
+	--create-if-not-exists \
+	--no-inference --no-constraints \
+	--chunk-size 10000 \
+	--tables $(SRC_TABLE) \
+	--insert $<
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Loading $< into $(DBFILEPATH)::$(SRC_TABLE)\" 
 
-
-#@$(IN2CSV) -f xlsx --sheet $(TABNAME) $< > $(basename $(<F)).tmp
-#(awk -v OFS=',' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '{if (NR!=1) { print NR, FILENAME, date, $$0 }}' $<) > $@
-
-
-#@$(CSVSTACK) -n load_dts -g $(DTS) $@ > tmp/$(@F)_1.tmp
-#@$(CSVSTACK) -n provider_code -g $@ tmp/$(@F)_1.tmp > tmp/$(@F)_2.tmp
-#@mv tmp/$(@F)_2.tmp $@
-#@rm tmp/$(@F)_1.tmp
-#@$(test-file)
-
-
-
-
-
-
-
-
-#load_csv_into_database
 
 #test-database
+test-database.db: etc/test/test.db
+	@#test-<database.db>(colon)(space)<path/to/database.db>
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"DB $(shell $(SQLITE3) $< ".databases")\"
 
 #test-table
+
+
 
 #record_count_table
 

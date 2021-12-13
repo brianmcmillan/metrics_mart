@@ -1,7 +1,7 @@
 ################################################################################
 # Macros - etc/pipeline/macros.mk                                              #
 ################################################################################
-define test_dir
+define test-dir
 	@# tests the directory in the <dependency>
 	@#<target>(colon)(space)<path/to/directory> 
 	@[[ -d $< ]] \
@@ -9,7 +9,7 @@ define test_dir
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"testing for $< did not find $?\" 
 endef
 
-define test_file
+define test-file
 	@# tests the file in the <target>
 	@#<target>(colon)(space)<path/to/directory> 
 	@[[ -f $@ ]] \
@@ -17,28 +17,28 @@ define test_file
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $(NAME)     \"testing for $< did not find $@\" 
 endef
 
-define test_file_warning
+define test-file-warning
 	@# tests the file in the <target>. If missing log [WARNING]
 	@[[ -f $@ ]] \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [WARNING]    $(NAME)     \"testing for $@ did not find $@\" 
 endef
 
-define test_dependent_file
+define test-dependent-file
 	@# tests the file in the <first dependency>
 	@[[ -f $< ]] \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [WARNING]    $@     \"testing for $< did not find $<\" 
 endef
 
-define file_compare
+define file-compare
 	@# tests the files in <first dependency> <second dependency>
 	@cmp -s $(word 1,$^) $(word 2,$^) \
 	&& true \
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@     \"$(word 1,$^) is not the same as $(word 2,$^)\" 
 endef
 
-define record_count_csv
+define record-count-csv
 	@#metrics/<csv_file.csv>(colon)(space)PATH = "<path/to/file.csv>"
 	@#record_count_csv: EXPECTED=<total row count>
 	@#metrics/<csv_file.csv>(colon)(space)
@@ -47,12 +47,12 @@ define record_count_csv
 	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"record count $(PATH) is $(shell wc -l < $(PATH)) not $(EXPECTED)\"  
 endef
 
-define update_file_modified_date
+define update-file-modified-date
 	@touch $< \
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Updating file modification date for $< to $(shell date -r $< +"%Y-%m-%dT%H:%M:%SZ") \" 
 endef
 
-define split_csv
+define split-csv
 	@#<split/file_group_description>(colon)(space) TARGETDIR=path/to/target_directory
 	@#<split/file_group_description>(colon)(space) TARGETNAME=file_name_
 	@#<split/file_group_description>(colon)(space) SPLITSIZE=number_of_rows
@@ -63,7 +63,7 @@ define split_csv
 	@$(test-dependent-file)
 endef
 
-define extract_csv_from_excel
+define extract-csv-from-excel
 	@#<path/to/csv_file.csv>(colon)(space)TABNAME = "<name of XLS worksheet>"
 	@#<path/to/csv_file.csv>(colon)(space)<path/to/source/excel_file.xlsx>
 	@$(IN2CSV) -f xlsx --sheet $(TABNAME) $< > tmp/$(basename $(<F)).tmp
@@ -73,9 +73,38 @@ define extract_csv_from_excel
 	@$(test-file)
 endef
 
+define load-csv-into-db-overwrite
+	@#load-<csv file>-<database>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#load-<csv file>-<database>(colon)(space)SRC_TABLE=SRC_{csv_file}_001
+	@#load-<csv file>-<database>(colon)(space)path/to/<csv_file.csv>
+	@$(CSVSQL) \
+	--db sqlite:///$(DBFILEPATH) \
+	--create-if-not-exists --overwrite \
+	--no-inference --no-constraints \
+	--chunk-size 10000 \
+	--tables $(SRC_TABLE) \
+	--insert $<
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Loading $< into $(DBFILEPATH)::$(SRC_TABLE)\" 
+endef
 
+define load-csv-into-db-append
+	@#load-<csv file>-<database>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#load-<csv file>-<database>(colon)(space)SRC_TABLE=SRC_{csv_file}_001
+	@#load-<csv file>-<database>(colon)(space)path/to/<csv_file.csv>
+	@$(CSVSQL) \
+	--db sqlite:///$(DBFILEPATH) \
+	--create-if-not-exists \
+	--no-inference --no-constraints \
+	--chunk-size 10000 \
+	--tables $(SRC_TABLE) \
+	--insert $<
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Loading $< into $(DBFILEPATH)::$(SRC_TABLE)\" 
+endef
 
-
+define test_database
+	@#test-<database.db>(colon)(space)<path/to/database.db>
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"DB $(shell $(SQLITE3) $< ".databases")\"
+endef
 
 
 
@@ -87,10 +116,7 @@ define test_table
 	else true; fi
 endef
 
-define test_database
-	@#test_databse(colon)(space)<path/to/database.db>
-	@echo $(DTS)    [INFO] - DB $(shell $(SQLITE3) $< ".databases")
-endef
+
 
 define record_count_table
 	@#record_count/<table name>(colon)(space)<path/to/database.db>
@@ -108,18 +134,7 @@ define execute_sql_export_csv
 	@$(SQL2CSV) --db sqlite:///$(DBFILE) $< > $@
 endef
 
-define load_csv_into_database
-	@#load_csv/SRC_<csv_file_name>_001(colon)(space)DBNAME=<database_name>
-	@#load_csv/SRC_<csv_file_name>_001(colon)(space)<path/to/csv_file.csv>
-	@echo $(DTS)    [INFO] - Executing $@
-	@$(CSVSQL) \
-	--db sqlite:///$(DBFILE) \
-	--create-if-not-exists --overwrite \
-	--no-inference --no-constraints \
-	--chunk-size 10000 \
-	--tables $(@F) \
-	--insert $<
-endef
+
 
 define create_table
 	@#<table_name>(colon)(space)<path/to/<table_name>_create.sql>
