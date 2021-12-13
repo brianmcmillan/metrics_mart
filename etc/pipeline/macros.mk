@@ -53,30 +53,24 @@ define update_file_modified_date
 endef
 
 define split_csv
-	@#<split/file_group_description>(colon)(space) SOURCEDIR=path/to/source_directory
 	@#<split/file_group_description>(colon)(space) TARGETDIR=path/to/target_directory
 	@#<split/file_group_description>(colon)(space) TARGETNAME=file_name_
 	@#<split/file_group_description>(colon)(space) SPLITSIZE=number_of_rows
 	@#<split/file_group_description>(colon)(space) path/to/source_file.csv
-	@echo $(DTS)     [INFO] - Splitting $< into $@
-	@mkdir -p $(SOURCEDIR) $(TARGETDIR)
-	@$(SPLIT) -d -a 3 -l $(SPLITSIZE) --additional-suffix=".csv" $< $(TARGETDIR)/$(TARGETNAME)
-	@[[ $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) == $(SPLITSIZE) ]] \
-	&& true \
-	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"record count $(TARGETDIR)$(TARGETNAME)000.csv is $(shell wc -l < $(TARGETDIR)$(TARGETNAME)000.csv) not $(SPLITSIZE)\"  
-	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]     $@    \"$(shell wc -l $(TARGETDIR)*.csv)\"
+	@mkdir -p $(TARGETDIR)
+	@$(SPLIT) -d -a 3 -l $(SPLITSIZE) --additional-suffix=".csv" $< $(TARGETDIR)$(TARGETNAME) \
+	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Splitting file $< by $(SPLITSIZE) lines\" 
+	@$(test-dependent-file)
 endef
 
 define extract_csv_from_excel
-	@#<path/to/csv_file.csv>(colon)(space)HEADER="source_line_number,provider_code,load_dts,<fields,in,source,file>"
 	@#<path/to/csv_file.csv>(colon)(space)TABNAME = "<name of XLS worksheet>"
 	@#<path/to/csv_file.csv>(colon)(space)<path/to/source/excel_file.xlsx>
-	@echo $(DTS)     [INFO] - Extracting data from $< [$(TABNAME)] into $@
 	@$(IN2CSV) -f xlsx --sheet $(TABNAME) $< > tmp/$(basename $(<F)).tmp
-	@echo $(HEADER) > $@	
-	@(awk -v OFS=',' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '{if (NR!=1) { print NR, FILENAME, date, $$0 }}' tmp/$(basename $(<F)).tmp) >> $@
+	@cat tmp/$(basename $(<F)).tmp | awk -v OFS=',' '{if (NR==1) {print "source_line_number", "provider_code", "load_dts", $$0}}' > $@	
+	@(awk -v OFS=',' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" -v source=$<::$(TABNAME) '{if (NR!=1) { print NR, source, date, $$0 }}' tmp/$(basename $(<F)).tmp) >> $@
 	@rm -f tmp/$(basename $(<F)).tmp
-	@$(test_file)
+	@$(test-file)
 endef
 
 
