@@ -75,56 +75,59 @@ endef
 
 define load-csv-into-db-overwrite
 	@#load-<csv file>-<database>(colon)(space)DBFILEPATH=<path/to/database_name.db>
-	@#load-<csv file>-<database>(colon)(space)SRC_TABLE=SRC_{csv_file}_001
+	@#load-<csv file>-<database>(colon)(space)TABLE=<table_name>
 	@#load-<csv file>-<database>(colon)(space)path/to/<csv_file.csv>
 	@$(CSVSQL) \
 	--db sqlite:///$(DBFILEPATH) \
 	--create-if-not-exists --overwrite \
 	--no-inference --no-constraints \
 	--chunk-size 10000 \
-	--tables $(SRC_TABLE) \
+	--tables $(TABLE) \
 	--insert $<
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Loading $< into $(DBFILEPATH)::$(SRC_TABLE)\" 
 endef
 
 define load-csv-into-db-append
 	@#load-<csv file>-<database>(colon)(space)DBFILEPATH=<path/to/database_name.db>
-	@#load-<csv file>-<database>(colon)(space)SRC_TABLE=SRC_{csv_file}_001
-	@#load-<csv file>-<database>(colon)(space)path/to/<csv_file.csv>
+	@#load-<csv file>-<database>(colon)(space)TABLE=<table_name>
+	@#load-<csv file>-<database>(colon)(space)<path/to/csv_file.csv>
 	@$(CSVSQL) \
 	--db sqlite:///$(DBFILEPATH) \
 	--create-if-not-exists \
 	--no-inference --no-constraints \
 	--chunk-size 10000 \
-	--tables $(SRC_TABLE) \
+	--tables $(TABLE) \
 	--insert $<
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Loading $< into $(DBFILEPATH)::$(SRC_TABLE)\" 
 endef
 
-define test_database
+define test-database
 	@#test-<database.db>(colon)(space)<path/to/database.db>
-	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"DB $(shell $(SQLITE3) $< ".databases")\"
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"DB $< exists - $(shell $(SQLITE3) $< ".databases")\"
 endef
 
-
-
-
-define test_table
-	@#test_table/<table_name>(colon)
-	@if ! test $(@F) = $(shell $(SQLITE3) $(DBFILE) ".tables $(@F)" ".quit"); \
-	then echo [FAIL] - $(@F) table does not exist; \
-	else true; fi
+define test-table
+	@#test-<table_name>(colon)(space)TABLENAME=<table_name>
+	@#test-<table_name>(colon)(space)<path/to/database.db>
+	@[[ $(shell $(SQLITE3) $< ".tables $(TABLE)" ".quit") == $(TABLE) ]] \
+	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Table $(TABLE) exists\" \
+	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"Table $(TABLE) not found\" 
 endef
 
-
-
-define record_count_table
-	@#record_count/<table name>(colon)(space)<path/to/database.db>
-	echo $(DTS)     [INFO] - record count = $(shell $(SQLITE3) $< \
-	"SELECT COUNT(*) || ' records in $(@F).$(notdir $<)' FROM [$(@F)]" ".quit")
+define record-count-table
+	@#record-count-<table name>(colon)(space)TABLENAME=<table_name>
+	@#record-count-<table name>(colon)(space)<path/to/database.db>
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"$(shell $(SQLITE3) $< \
+	"SELECT COUNT(*) || ' records in $<::$(TABLE)' FROM [$(TABLE)]" ".quit")\"
 endef
 
-
+define create-table
+	@#create-<table_name>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#create-<table_name>(colon)(space)TABLENAME=<table_name>
+	@#create-<table_name>(colon)(space)<path/to/<table_name>_create.sql> [<path/to/database.db>]
+	@$(SQLITE3) $(DBFILEPATH) ".read $<" ".quit"
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created table $(TABLE) in $(DBFILEPATH)\"
+endef
 
 
 
@@ -136,11 +139,7 @@ endef
 
 
 
-define create_table
-	@#<table_name>(colon)(space)<path/to/<table_name>_create.sql>
-	@echo $(DTS)    [INFO] - Creating table $@
-	@$(SQLITE3) $(DBFILE) ".read $<" ".quit"
-endef
+
 
 define execute_sql
 	@#<table_name>(colon)(space) <path/to/sql_file.sql> [<dependent_table_name(s)>]

@@ -56,6 +56,19 @@ mock-file_004.xlsx: .FORCE
 	@/usr/bin/base64 -d -i $(SOURCE) -o $(TARGET)
 	@rm $(SOURCE)
 
+#### SQL Mocks ####
+etc/test/FILE_005_001_create.sql:
+	@echo "CREATE TABLE \"FILE_005_001\" ("  > $@ 
+	@echo "source_line_number VARCHAR," >> $@
+	@echo "provider_code VARCHAR," >> $@
+	@echo "load_dts VARCHAR," >> $@ 
+	@echo "text VARCHAR," >> $@ 
+	@echo "date VARCHAR," >> $@ 
+	@echo "value VARCHAR);" >> $@ 
+
+
+
+
 #### Macro tests ####
 test-macro: \
 test-dir-pass test-dir-fail test-dir test-dir-macro \
@@ -63,7 +76,8 @@ etc/test/file_001.csv etc/test/file_001b.csv etc/test/file_001c.csv \
 etc/test/file_002.csv etc/test/file_003.csv test-dependent-file file-compare-pass \
 file-compare-fail file-compare-macro record-count-csv update-file-modified-date-macro \
 split-file_004 etc/test/file_005.csv \
-load-csv-into-db-overwrite load-csv-into-db-append
+load-csv-into-db-overwrite load-csv-into-db-append \
+test-database test-table record-count-table create-table
 
 .PHONY: split-file_004
 
@@ -168,52 +182,75 @@ etc/test/file_005.csv: etc/test/file_004.xlsx
 
 #load-csv-into-db-overwrite
 load-csv-into-db-overwrite: DBFILEPATH=etc/test/test.db
-load-csv-into-db-overwrite: SRC_TABLE=SRC_$(basename $(<F))_001
+load-csv-into-db-overwrite: TABLE=SRC_$(basename $(<F))_001
 load-csv-into-db-overwrite: etc/test/file_005.csv
 	@#load-<csv file>-<database>(colon)(space)DBFILEPATH=<path/to/database_name.db>
-	@#load-<csv file>-<database>(colon)(space)SRC_TABLE=SRC_{csv_file}_001
+	@#load-<csv file>-<database>(colon)(space)TABLE=<table_name>
 	@#load-<csv file>-<database>(colon)(space)path/to/<csv_file.csv>
 	@$(CSVSQL) \
 	--db sqlite:///$(DBFILEPATH) \
 	--create-if-not-exists --overwrite \
 	--no-inference --no-constraints \
 	--chunk-size 10000 \
-	--tables $(SRC_TABLE) \
+	--tables $(TABLE) \
 	--insert $<
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Loading $< into $(DBFILEPATH)::$(SRC_TABLE)\" 
 
 #load-csv-into-db-append
 load-csv-into-db-append: DBFILEPATH=etc/test/test.db
-load-csv-into-db-append: SRC_TABLE=SRC_$(basename $(<F))_002
+load-csv-into-db-append: TABLE=SRC_$(basename $(<F))_002
 load-csv-into-db-append: etc/test/file_005.csv
 	@#load-<csv file>-<database>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#load-<csv file>-<database>(colon)(space)TABLE=<table_name>
 	@#load-<csv file>-<database>(colon)(space)<path/to/csv_file.csv>
 	@$(CSVSQL) \
 	--db sqlite:///$(DBFILEPATH) \
 	--create-if-not-exists \
 	--no-inference --no-constraints \
 	--chunk-size 10000 \
-	--tables $(SRC_TABLE) \
+	--tables $(TABLE) \
 	--insert $<
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Loading $< into $(DBFILEPATH)::$(SRC_TABLE)\" 
 
-
 #test-database
-test-database.db: etc/test/test.db
+test-database: etc/test/test.db
 	@#test-<database.db>(colon)(space)<path/to/database.db>
-	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"DB $(shell $(SQLITE3) $< ".databases")\"
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"DB $< exists - $(shell $(SQLITE3) $< ".databases")\"
 
 #test-table
+test-table: TABLE=SRC_file_005_001
+test-table: etc/test/test.db
+	@#test-<table_name>(colon)(space)TABLENAME=<table_name>
+	@#test-<table_name>(colon)(space)<path/to/database.db>
+	@[[ $(shell $(SQLITE3) $< ".tables $(TABLE)" ".quit") == $(TABLE) ]] \
+	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Table $(TABLE) exists\" \
+	|| echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"Table $(TABLE) not found\"  
+
+#record-count-table
+record-count-table: TABLE=SRC_file_005_001
+record-count-table: etc/test/test.db
+	@#record-count-<table name>(colon)(space)TABLENAME=<table_name>
+	@#record-count-<table name>(colon)(space)<path/to/database.db>
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"$(shell $(SQLITE3) $< \
+	"SELECT COUNT(*) || ' records in $<::$(TABLE)' FROM [$(TABLE)]" ".quit")\"
+
+#create-table
+create-table: DBFILEPATH=etc/test/test.db
+create-table: TABLE=FILE_005_001
+create-table: etc/test/FILE_005_001_create.sql etc/test/test.db
+	@#create-<table_name>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#create-<table_name>(colon)(space)TABLENAME=<table_name>
+	@#create-<table_name>(colon)(space)<path/to/<table_name>_create.sql> [<path/to/database.db>]
+	@$(SQLITE3) $(DBFILEPATH) ".read $<" ".quit"
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created table $(TABLE) in $(DBFILEPATH)\"
 
 
 
-#record_count_table
-
-#execute_sql
+#execute-sql
 
 #execute_sql_export_csv
 
-#create_table
+
 
 
 
