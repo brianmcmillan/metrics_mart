@@ -129,20 +129,33 @@ endef
 #	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created table $(TABLE) in $(DBFILEPATH)\"
 #endef
 
-define execute_sql
+define execute-sql
 	@#create-<table_name>(colon)(space)DBFILEPATH=<path/to/database_name.db>
 	@#create-<table_name>(colon)(space)<path/to/<query_file>.sql> [<path/to/database.db> <dependent tables>]
 	@$(SQLITE3) $(DBFILEPATH) ".read $<" ".quit"
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< on $(DBFILEPATH)\"
 endef
 
-
-define execute_sql_export_csv
-	@#<path/to/export_file.csv>(colon)(space)<path/to/query.sql>
-	@echo $(DTS)     [INFO] - Executing $< and exporting to $@
-	@$(SQL2CSV) --db sqlite:///$(DBFILE) $< > $@
+define export-csv
+	@#path/to/extract.csv(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#path/to/extract.csv(colon)(space)<path/to/<query_file>.sql> [<path/to/database.db> <dependent tables>]
+	@$(SQL2CSV) --db sqlite:///$(DBFILEPATH) $< > $@
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< exported to $@\"
 endef
 
+define export-json
+	@#path/to/extract.csv(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#path/to/extract.csv(colon)(space)<path/to/<query_file>.sql> [<path/to/database.db> <dependent tables>] .FORCE
+	$(SQLITEUTILS) $(DBFILEPATH) "$(shell cat $<)" > $@
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< exported to $@\"
+endef
+
+define export-json-nl
+	@#path/to/extract.csv(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#path/to/extract.csv(colon)(space)<path/to/<query_file>.sql> [<path/to/database.db> <dependent tables>] .FORCE
+	$(SQLITEUTILS) --nl $(DBFILEPATH) "$(shell cat $<)" > $@
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< exported to $@\"
+endef
 
 
 

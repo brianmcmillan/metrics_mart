@@ -67,7 +67,7 @@ etc/test/FILE_005_001_create.sql:
 	@echo "value VARCHAR);" >> $@ 
 
 etc/test/FILE_005_001_query_001.sql: 
-	@echo "SELECT MAX(source_line_number) FROM SRC_file_005_001;" > $@
+	@echo "SELECT * FROM SRC_file_005_001;" > $@
 
 
 
@@ -79,7 +79,8 @@ etc/test/file_002.csv etc/test/file_003.csv test-dependent-file file-compare-pas
 file-compare-fail file-compare-macro record-count-csv update-file-modified-date-macro \
 split-file_004 etc/test/file_005.csv \
 load-csv-into-db-overwrite load-csv-into-db-append \
-test-database test-table record-count-table create-table execute-sql
+test-database test-table record-count-table execute-sql \
+etc/test/FILE_005_001_query_001.csv etc/test/load/FILE_005_001_query_001.json etc/test/load/FILE_005_001_query_001_nl.json
 
 .PHONY: split-file_004
 
@@ -254,22 +255,29 @@ execute-sql: etc/test/FILE_005_001_query_001.sql etc/test/test.db
 	@$(SQLITE3) $(DBFILEPATH) ".read $<" ".quit"
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< on $(DBFILEPATH)\"
 
+#export-csv
+etc/test/FILE_005_001_query_001.csv: DBFILEPATH=etc/test/test.db
+etc/test/FILE_005_001_query_001.csv: etc/test/FILE_005_001_query_001.sql .FORCE
+	@#path/to/extract.csv(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#path/to/extract.csv(colon)(space)<path/to/<query_file>.sql> [<path/to/database.db> <dependent tables>]
+	@$(SQL2CSV) --db sqlite:///$(DBFILEPATH) $< > $@
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< exported to $@\"
 
+#export-json
+etc/test/load/FILE_005_001_query_001.json: DBFILEPATH=etc/test/test.db
+etc/test/load/FILE_005_001_query_001.json: etc/test/FILE_005_001_query_001.sql .FORCE
+	@#path/to/extract.csv(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#path/to/extract.csv(colon)(space)<path/to/<query_file>.sql> [<path/to/database.db> <dependent tables>] .FORCE
+	@$(SQLITEUTILS) $(DBFILEPATH) "$(shell cat $<)" > $@
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< exported to $@\"
 
-#execute_sql_export_csv
-
-
-
-
-
-#vega_report_from_api
-
-#vega_report_from_file
-
-
-#sql_template_from_csv
-
-
+#export-json-nl
+etc/test/load/FILE_005_001_query_001_nl.json: DBFILEPATH=etc/test/test.db
+etc/test/load/FILE_005_001_query_001_nl.json: etc/test/FILE_005_001_query_001.sql .FORCE
+	@#path/to/extract.csv(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#path/to/extract.csv(colon)(space)<path/to/<query_file>.sql> [<path/to/database.db> <dependent tables>] .FORCE
+	@$(SQLITEUTILS) --nl $(DBFILEPATH) "$(shell cat $<)" > $@
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< exported to $@\"
 
 #help
 
@@ -280,3 +288,18 @@ execute-sql: etc/test/FILE_005_001_query_001.sql etc/test/test.db
 #log_rotate
 
 #compact_database
+
+#vega_report_from_api
+
+#vega_report_from_file
+
+
+
+
+
+
+
+#sql_template_from_csv
+
+
+
