@@ -157,9 +157,25 @@ define export-json-nl
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< exported to $@\"
 endef
 
+define er-diagram
+	@#<path/to/diagram.type>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#<path/to/diagram.type>(colon)(space)REL_FILE="<path/to/relationship_file.txt>"
+	@#<path/to/diagram.type>(colon)(space)<table_name(s)>"
+	@#Types can be er, pdf, png, dot
+	@$(ERALCHEMY) -i sqlite:///$(DBFILEPATH) -o tmp/$(subst .,,$(notdir $(DBFILEPATH))).er
+	@cat tmp/$(subst .,,$(notdir $(DBFILEPATH))).er $(REL_FILE) > tmp/$(subst .,,$(notdir $(DBFILEPATH)))_2.er || true
+	@$(ERALCHEMY) -i tmp/$(subst .,,$(notdir $(DBFILEPATH)))_2.er -o $@
+	@rm -f tmp/$(subst .,,$(notdir $(DBFILEPATH)))*.er
+endef
 
-
-
+define table_metadata
+	@#table_metadata(colon)(space)<path/to/database.db>"
+	@echo $(DTS)    [INFO] - Executing $@
+	@$(SQLITE3) $(<) "DROP TABLE IF EXISTS '_analyze_tables_';" ".quit"
+	@$(SQLITE3) $(<) "DROP TABLE IF EXISTS 'META_TABLES_001';" ".quit"
+	@$(SQLITEUTILS) analyze-tables $(<) --save
+	@$(SQLITE3) $(<) "ALTER TABLE '_analyze_tables_' RENAME TO 'META_TABLES_001';" ".quit"
+endef
 
 
 define vega_report_from_api
@@ -188,14 +204,7 @@ define vega_report_from_file
 	@cat etc/app/vega_embed_footer.viz >> $@
 endef
 
-define table_metadata
-	@#table_metadata(colon)(space)<path/to/database.db>"
-	@echo $(DTS)    [INFO] - Executing $@
-	@$(SQLITE3) $(<) "DROP TABLE IF EXISTS '_analyze_tables_';" ".quit"
-	@$(SQLITE3) $(<) "DROP TABLE IF EXISTS 'META_TABLES_001';" ".quit"
-	@$(SQLITEUTILS) analyze-tables $(<) --save
-	@$(SQLITE3) $(<) "ALTER TABLE '_analyze_tables_' RENAME TO 'META_TABLES_001';" ".quit"
-endef
+
 
 define sql_template_from_csv
 	@#make template/src_from_csv CSVPATH=<path/to/file.csv>
@@ -213,22 +222,7 @@ define sql_template_from_csv
 	@rm tmp/temp.db
 endef
 
-define er_diagram
-	@#<path/to/diagram.type>(colon)(space)REL_FILE="<path/to/relationship_file.txt>"
-	@#<path/to/diagram.type>(colon)(space)<table_name(s)>"
-	@#Types can be er, pdf, png, dot
-	@echo $(DTS)    [INFO] - Executing $@
-	@$(ERALCHEMY) -i sqlite:///$(DBFILE) -o tmp/$(@F).er
-	@cat tmp/$(@F).er $(REL_FILE) > tmp/$(@F)_2.er || true
-	@$(ERALCHEMY) -i tmp/$(@F)_2.er -o $@
-	@rm -f tmp/$(@F)*.er
-endef
 
-define log_rotate
-	@#log_rotate:(colon)(space)<path/to/logfile>
-	@echo $(DTS)    [INFO] - Executing $@
-	@mv $< $(basename($<))_$(shell date +%Y-%m-%d).txt
-endef
 
 define compact_database
 	@#compact_database(colon)(space)<path/to/database.db>
@@ -238,10 +232,17 @@ define compact_database
 	@$(SQLITE3) $< "PRAGMA integrity_check;" && echo $(DTS)    [INFO] - Performing integrity check
 endef
 
-define help
+define log_rotate
+	@#log_rotate:(colon)(space)<path/to/logfile>
 	@echo $(DTS)    [INFO] - Executing $@
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-	awk 'BEGIN {FS = ":.*?## "};\
-	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+	@mv $< $(basename($<))_$(shell date +%Y-%m-%d).txt
 endef
+
+#define help
+# Moved into main makefile
+#	@echo $(DTS)    [INFO] - Executing $@
+#	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+#	awk 'BEGIN {FS = ":.*?## "};\
+#	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+#endef
 

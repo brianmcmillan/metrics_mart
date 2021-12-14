@@ -1,17 +1,17 @@
 ################################################################################
 # Unit Tests - etc/pipeline/unit_tests.mk                                      #
 ################################################################################
-unit-tests: mock-uninstalldirs mock-data test-macro
+#unit-tests: mock-uninstalldirs mock-data test-macro
 
 .PHONY: mock-file_001.csv mock-file_002.csv etc1/ \
 etc/pipe/ etc/pipeline/unit_test.mk etc/pipeline/unit_test.mk2
 
-mock-uninstalldirs:
+mock-uninstalldirs: ##Uninstall mack data sets
 	@rm -rf etc/test/* tmp/*
 
 #### Data Mocks ####
 mock-data: mock-file_001.csv mock-file_002.csv mock-file_003.csv mock-file_003a.csv \
-mock-file_004.csv mock-file_004.xlsx
+mock-file_004.csv mock-file_004.xlsx ##Build mock datasets
 
 mock-file_001.csv: PATH=etc/test/file_001.csv
 mock-file_001.csv: .FORCE
@@ -69,7 +69,8 @@ etc/test/FILE_005_001_create.sql:
 etc/test/FILE_005_001_query_001.sql: 
 	@echo "SELECT * FROM SRC_file_005_001;" > $@
 
-
+etc/test/er_relationships.txt:
+	@echo "SRC_file_005_001 1--1 SRC_file_005_002" > $@
 
 #### Macro tests ####
 test-macro: \
@@ -80,7 +81,8 @@ file-compare-fail file-compare-macro record-count-csv update-file-modified-date-
 split-file_004 etc/test/file_005.csv \
 load-csv-into-db-overwrite load-csv-into-db-append \
 test-database test-table record-count-table execute-sql \
-etc/test/FILE_005_001_query_001.csv etc/test/load/FILE_005_001_query_001.json etc/test/load/FILE_005_001_query_001_nl.json
+etc/test/FILE_005_001_query_001.csv etc/test/load/FILE_005_001_query_001.json etc/test/load/FILE_005_001_query_001_nl.json \
+etc/test/er-diagram.pdf
 
 .PHONY: split-file_004
 
@@ -280,8 +282,26 @@ etc/test/load/FILE_005_001_query_001_nl.json: etc/test/FILE_005_001_query_001.sq
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $< exported to $@\"
 
 #help
+makefile-list:
+	@echo $(MAKEFILE_LIST)
 
-#er_diagram
+help-makefile: 
+	grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(word 1, $(MAKEFILE_LIST)) | sort | \
+	awk 'BEGIN {FS = ":.*?## "};\
+	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+
+#er-diagram
+etc/test/er-diagram.pdf: DBFILEPATH=etc/test/test.db
+etc/test/er-diagram.pdf: REL_FILE=etc/test/er_relationships.txt
+etc/test/er-diagram.pdf: .FORCE etc/test/er_relationships.txt
+	@#<path/to/diagram.type>(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#<path/to/diagram.type>(colon)(space)REL_FILE="<path/to/relationship_file.txt>"
+	@#<path/to/diagram.type>(colon)(space)<table_name(s)>"
+	@#Types can be er, pdf, png, dot
+	@$(ERALCHEMY) -i sqlite:///$(DBFILEPATH) -o tmp/$(subst .,,$(notdir $(DBFILEPATH))).er
+	@cat tmp/$(subst .,,$(notdir $(DBFILEPATH))).er $(REL_FILE) > tmp/$(subst .,,$(notdir $(DBFILEPATH)))_2.er || true
+	@$(ERALCHEMY) -i tmp/$(subst .,,$(notdir $(DBFILEPATH)))_2.er -o $@
+	@rm -f tmp/$(subst .,,$(notdir $(DBFILEPATH)))*.er
 
 #table_metadata
 

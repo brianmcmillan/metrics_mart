@@ -19,6 +19,15 @@ include etc/pipeline/config.mk
 include etc/pipeline/macros.mk
 include etc/pipeline/unit-test.mk
 
+define help
+	@echo $(DTS)    [INFO] - Executing $@
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(word 1, $(MAKEFILE_LIST)) | sort | \
+	awk 'BEGIN {FS = ":.*?## "};\
+	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+endef
+
+
+
 ###############################################################################
 all: run ## Executes the default make task.
 info: help info/variables documentation ## Generates the informational files.
@@ -27,7 +36,8 @@ installcheck: test/inputs ## Run the project test suite.
 install: test/inputs ## Builds the database and application structure.
 uninstall: uninstalldirs ## Uninstalls the project.
 run: test/inputs build/local table_metadata documentation metrics ## Executes the data pipelines.
-deploy: deploy/local ##Deploys local web server.
+deploy: deploy/local ## Deploys a local web server.
+unit-tests: mock-uninstalldirs mock-data test-macro ## Run unit tests
 
 .PHONY: all info check installcheck install uninstall run deploy help documentation \
 	table_metadata uninstalldirs log_rotate compact_database info/variables template/src_from_csv
