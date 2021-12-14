@@ -188,16 +188,24 @@ endef
 define backup-database
 	@#backup-database(colon)(space)BACKUPFILEPATH=<path/to/database.bak>
 	@#backup-database(colon)(space)<path/to/database.db>
-	$(SQLITE3) $< ".backup $(BACKUPFILEPATH)" && echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Backed up $< into $(BACKUPFILEPATH)\"
+	@$(SQLITE3) $< ".backup $(BACKUPFILEPATH)"
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Backed up $< into $(BACKUPFILEPATH)\"
 endef
 
 define log_rotate
-	@#log_rotate:(colon)(space)<path/to/logfile>
-	@echo $(DTS)    [INFO] - Executing $@
-	@mv $< $(basename($<))_$(shell date +%Y-%m-%d).txt
+	@#log_rotate:(colon)(space)LOGFILEPATH=<path/to/logfile>
+	@#log_rotate:(colon)(space)<dependencies>
+	@mv $(LOGFILEPATH) $(basename $(LOGFILEPATH))_$(shell date +%Y-%m-%d).log
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Rotated $(LOGFILEPATH) into $(basename $(LOGFILEPATH))_$(shell date +%Y-%m-%d).txt\"
 endef
 
-
+#define help
+# Moved into main makefile
+#	@echo $(DTS)    [INFO] - Executing $@
+#	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
+#	awk 'BEGIN {FS = ":.*?## "};\
+#	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
+#endef
 
 define vega_report_from_api
 	@#<path/to/export_file.html>(colon)(space)VIZTITLE=<report title>
@@ -225,8 +233,6 @@ define vega_report_from_file
 	@cat etc/app/vega_embed_footer.viz >> $@
 endef
 
-
-
 define sql_template_from_csv
 	@#make template/src_from_csv CSVPATH=<path/to/file.csv>
 	@echo $(DTS)    [INFO] - Creating script for SRC_$(notdir $(basename $(CSVPATH)))_###_create from $(CSVPATH)
@@ -242,18 +248,3 @@ define sql_template_from_csv
 	>> etc/sql/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
 	@rm tmp/temp.db
 endef
-
-
-
-
-
-
-
-#define help
-# Moved into main makefile
-#	@echo $(DTS)    [INFO] - Executing $@
-#	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
-#	awk 'BEGIN {FS = ":.*?## "};\
-#	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
-#endef
-

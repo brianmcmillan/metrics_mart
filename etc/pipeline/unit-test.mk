@@ -11,7 +11,7 @@ mock-uninstalldirs: ##Uninstall mack data sets
 
 #### Data Mocks ####
 mock-data: mock-file_001.csv mock-file_002.csv mock-file_003.csv mock-file_003a.csv \
-mock-file_004.csv mock-file_004.xlsx ##Build mock datasets
+mock-file_004.csv mock-file_004.xlsx mock-logfile.log
 
 mock-file_001.csv: PATH=etc/test/file_001.csv
 mock-file_001.csv: .FORCE
@@ -56,6 +56,13 @@ mock-file_004.xlsx: .FORCE
 	@/usr/bin/base64 -d -i $(SOURCE) -o $(TARGET)
 	@rm $(SOURCE)
 
+mock-logfile.log: PATH=etc/test/logfile.log
+mock-logfile.log: .FORCE
+	@echo "2021-12-14T20:13:40Z [INFO] table-metadata "Executed table-metadata on etc/test/test.db"" > $(PATH) 
+	@echo "2021-12-14T20:13:40Z [INFO] etc/test/er-diagram.pdf "Executed er-digram and exported to etc/test/er-diagram.pdf"" >> $(PATH) 
+	@echo "2021-12-14T20:13:41Z [INFO] compact-database "Optimized etc/test/test.db"" >> $(PATH) 
+
+
 #### SQL Mocks ####
 etc/test/FILE_005_001_create.sql:
 	@echo "CREATE TABLE \"FILE_005_001\" ("  > $@ 
@@ -82,7 +89,7 @@ split-file_004 etc/test/file_005.csv \
 load-csv-into-db-overwrite load-csv-into-db-append \
 test-database test-table record-count-table execute-sql \
 etc/test/FILE_005_001_query_001.csv etc/test/load/FILE_005_001_query_001.json etc/test/load/FILE_005_001_query_001_nl.json \
-table-metadata etc/test/er-diagram.pdf compact-database backup-database
+table-metadata etc/test/er-diagram.pdf compact-database backup-database log-rotate
 
 .PHONY: split-file_004
 
@@ -325,21 +332,21 @@ backup-database: BACKUPFILEPATH=etc/test/$(<F).bak
 backup-database: etc/test/test.db
 	@#backup-database(colon)(space)BACKUPFILEPATH=<path/to/database.bak>
 	@#backup-database(colon)(space)<path/to/database.db>
-	$(SQLITE3) $< ".backup $(BACKUPFILEPATH)" && echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Backed up $< into $(BACKUPFILEPATH)\"
+	@$(SQLITE3) $< ".backup $(BACKUPFILEPATH)"
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Backed up $< into $(BACKUPFILEPATH)\"
 
-#log_rotate
-
+#log-rotate
+log-rotate: LOGFILEPATH=etc/test/logfile.log
+log-rotate: mock-logfile.log
+	@#log_rotate:(colon)(space)LOGFILEPATH=<path/to/logfile>
+	@#log_rotate:(colon)(space)<dependencies>
+	@mv $(LOGFILEPATH) $(basename $(LOGFILEPATH))_$(shell date +%Y-%m-%d).log
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Rotated $(LOGFILEPATH) into $(basename $(LOGFILEPATH))_$(shell date +%Y-%m-%d).txt\"
 
 
 #vega_report_from_api
 
 #vega_report_from_file
-
-
-
-
-
-
 
 #sql_template_from_csv
 
