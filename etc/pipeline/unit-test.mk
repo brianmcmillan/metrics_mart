@@ -82,7 +82,7 @@ split-file_004 etc/test/file_005.csv \
 load-csv-into-db-overwrite load-csv-into-db-append \
 test-database test-table record-count-table execute-sql \
 etc/test/FILE_005_001_query_001.csv etc/test/load/FILE_005_001_query_001.json etc/test/load/FILE_005_001_query_001_nl.json \
-etc/test/er-diagram.pdf
+table-metadata etc/test/er-diagram.pdf compact-database backup-database
 
 .PHONY: split-file_004
 
@@ -290,6 +290,15 @@ help-makefile:
 	awk 'BEGIN {FS = ":.*?## "};\
 	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
+#table-metadata
+table-metadata: etc/test/test.db
+	@#table-metadata(colon)(space)<path/to/database.db>"
+	@$(SQLITE3) $< "DROP TABLE IF EXISTS '_analyze_tables_';" ".quit"
+	@$(SQLITE3) $< "DROP TABLE IF EXISTS 'META_TABLES_001';" ".quit"
+	@$(SQLITEUTILS) analyze-tables $< --save
+	@$(SQLITE3) $< "ALTER TABLE '_analyze_tables_' RENAME TO 'META_TABLES_001';" ".quit"
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $@ on $<	\"
+
 #er-diagram
 etc/test/er-diagram.pdf: DBFILEPATH=etc/test/test.db
 etc/test/er-diagram.pdf: REL_FILE=etc/test/er_relationships.txt
@@ -302,12 +311,25 @@ etc/test/er-diagram.pdf: .FORCE etc/test/er_relationships.txt
 	@cat tmp/$(subst .,,$(notdir $(DBFILEPATH))).er $(REL_FILE) > tmp/$(subst .,,$(notdir $(DBFILEPATH)))_2.er || true
 	@$(ERALCHEMY) -i tmp/$(subst .,,$(notdir $(DBFILEPATH)))_2.er -o $@
 	@rm -f tmp/$(subst .,,$(notdir $(DBFILEPATH)))*.er
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed er-digram and exported to $@\"
 
-#table_metadata
+#compact-database
+compact-database: etc/test/test.db
+	@#compact-database(colon)(space)<path/to/database.db>
+	@$(SQLITE3) $< "PRAGMA optimize;" && echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Optimized $<\"
+	@$(SQLITE3) $< "PRAGMA auto_vacuum;" && $(SQLITE3) $< "VACUUM;" && echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Vacuumed $<\"
+	@$(SQLITE3) $< "PRAGMA integrity_check;" && echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Performed integrity check on $<\"
+
+#backup-database
+backup-database: BACKUPFILEPATH=etc/test/$(<F).bak
+backup-database: etc/test/test.db
+	@#backup-database(colon)(space)BACKUPFILEPATH=<path/to/database.bak>
+	@#backup-database(colon)(space)<path/to/database.db>
+	$(SQLITE3) $< ".backup $(BACKUPFILEPATH)" && echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Backed up $< into $(BACKUPFILEPATH)\"
 
 #log_rotate
 
-#compact_database
+
 
 #vega_report_from_api
 

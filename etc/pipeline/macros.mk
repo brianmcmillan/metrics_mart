@@ -166,16 +166,37 @@ define er-diagram
 	@cat tmp/$(subst .,,$(notdir $(DBFILEPATH))).er $(REL_FILE) > tmp/$(subst .,,$(notdir $(DBFILEPATH)))_2.er || true
 	@$(ERALCHEMY) -i tmp/$(subst .,,$(notdir $(DBFILEPATH)))_2.er -o $@
 	@rm -f tmp/$(subst .,,$(notdir $(DBFILEPATH)))*.er
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed er-digram and exported to $@\"
 endef
 
 define table_metadata
-	@#table_metadata(colon)(space)<path/to/database.db>"
-	@echo $(DTS)    [INFO] - Executing $@
-	@$(SQLITE3) $(<) "DROP TABLE IF EXISTS '_analyze_tables_';" ".quit"
-	@$(SQLITE3) $(<) "DROP TABLE IF EXISTS 'META_TABLES_001';" ".quit"
-	@$(SQLITEUTILS) analyze-tables $(<) --save
-	@$(SQLITE3) $(<) "ALTER TABLE '_analyze_tables_' RENAME TO 'META_TABLES_001';" ".quit"
+	@#table-metadata(colon)(space)<path/to/database.db>"
+	@$(SQLITE3) $< "DROP TABLE IF EXISTS '_analyze_tables_';" ".quit"
+	@$(SQLITE3) $< "DROP TABLE IF EXISTS 'META_TABLES_001';" ".quit"
+	@$(SQLITEUTILS) analyze-tables $< --save
+	@$(SQLITE3) $< "ALTER TABLE '_analyze_tables_' RENAME TO 'META_TABLES_001';" ".quit"
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $@ on $<	\"
 endef
+
+define compact-database
+	@#compact-database(colon)(space)<path/to/database.db>
+	@$(SQLITE3) $< "PRAGMA optimize;" && echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Optimized $<\"
+	@$(SQLITE3) $< "PRAGMA auto_vacuum = FULL;" && $(SQLITE3) $< "VACUUM;" && echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Vacuumed $<\"
+	@$(SQLITE3) $< "PRAGMA integrity_check;" && echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Performed integrity check on $<\"
+endef
+
+define backup-database
+	@#backup-database(colon)(space)BACKUPFILEPATH=<path/to/database.bak>
+	@#backup-database(colon)(space)<path/to/database.db>
+	$(SQLITE3) $< ".backup $(BACKUPFILEPATH)" && echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Backed up $< into $(BACKUPFILEPATH)\"
+endef
+
+define log_rotate
+	@#log_rotate:(colon)(space)<path/to/logfile>
+	@echo $(DTS)    [INFO] - Executing $@
+	@mv $< $(basename($<))_$(shell date +%Y-%m-%d).txt
+endef
+
 
 
 define vega_report_from_api
@@ -224,19 +245,9 @@ endef
 
 
 
-define compact_database
-	@#compact_database(colon)(space)<path/to/database.db>
-	@echo $(DTS)    [INFO] - Executing $@
-	@$(SQLITE3) $< "PRAGMA optimize;" && echo $(DTS)    [INFO] - Optimizing database
-	@$(SQLITE3) $< "PRAGMA auto_vacuum;" && echo $(DTS)    [INFO] - Vacuuming database
-	@$(SQLITE3) $< "PRAGMA integrity_check;" && echo $(DTS)    [INFO] - Performing integrity check
-endef
 
-define log_rotate
-	@#log_rotate:(colon)(space)<path/to/logfile>
-	@echo $(DTS)    [INFO] - Executing $@
-	@mv $< $(basename($<))_$(shell date +%Y-%m-%d).txt
-endef
+
+
 
 #define help
 # Moved into main makefile
