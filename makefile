@@ -27,7 +27,6 @@ define help
 endef
 
 
-
 ###############################################################################
 all: run ## Executes the default make task.
 info: help info/variables documentation ## Generates the informational files.
@@ -44,6 +43,9 @@ unit-tests: mock-uninstalldirs mock-data test-macro ## Run unit tests
 
 .FORCE:
 
+################################################################################
+# Documentation                                                                #
+################################################################################
 help: ## List of all makefile tasks.
 	@$(help)
 
@@ -78,26 +80,7 @@ log_rotate: <path/to/log_file> ## Rotates log files.
 compact_database: svc/db/online_retail.db ## Database maintenance scripts.
 	@$(compact_database)
 
-info/variables: ## List the variables in the makefile.
-	@echo $(DTS)    [INFO] - Executing $@
-	@echo "-- Program paths ----------------------------------------------------"
-	@echo SHELL = $(SHELL)
-	@echo SQLITE3 = $(SQLITE3)
-	@echo GRAPHVIZDOT = $(GRAPHVIZDOT)
-	@echo SPLIT = $(SPLIT)
-	@echo TREE = $(TREE)
-	@echo GCLOUD = $(GCLOUD)
-	@echo PYENVDIR = $(PYENVDIR)
-	@echo PYTHON3 = $(PYTHON3)
-	@echo PIP = $(PIP)
-	@echo IN2CSV = $(IN2CSV)
-	@echo CSVSTACK = $(CSVSTACK)
-	@echo CSVSQL = $(CSVSQL)
-	@echo SQLITEUTILS = $(SQLITEUTILS)
-	@echo DATASETTE = $(DATASETTE)
-	@echo NODEGRAPH = $(NODEGRAPH)
-	@echo ERALCHEMY = $(ERALCHEMY)
-	@echo "---------------------------------------------------------------------"
+
 
 .PHONY: template/src_from_csv
 template/src_from_csv: ## Create source table from CSV template (make template/src_from_csv CSVPATH=<path/to/file.csv).

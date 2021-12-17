@@ -3,15 +3,15 @@
 ################################################################################
 #unit-tests: mock-uninstalldirs mock-data test-macro
 
-.PHONY: mock-file_001.csv mock-file_002.csv etc1/ \
-etc/pipe/ etc/pipeline/unit_test.mk etc/pipeline/unit_test.mk2
+.PHONY: mock-file_001.csv mock-file_002.csv mock-file_003.csv mock-file_003a.csv \
+mock-file_004.csv mock-file_004.xlsx mock-file_004.xlsx mock-logfile.log
 
 mock-uninstalldirs: ##Uninstall mack data sets
 	@rm -rf etc/test/* tmp/*
 
 #### Data Mocks ####
 mock-data: mock-file_001.csv mock-file_002.csv mock-file_003.csv mock-file_003a.csv \
-mock-file_004.csv mock-file_004.xlsx mock-logfile.log
+mock-file_004.csv mock-file_004.xlsx mock-file_004.xlsx mock-logfile.log
 
 mock-file_001.csv: PATH=etc/test/file_001.csv
 mock-file_001.csv: .FORCE
@@ -91,7 +91,12 @@ test-database test-table record-count-table execute-sql \
 etc/test/FILE_005_001_query_001.csv etc/test/load/FILE_005_001_query_001.json etc/test/load/FILE_005_001_query_001_nl.json \
 table-metadata etc/test/er-diagram.pdf compact-database backup-database log-rotate
 
-.PHONY: split-file_004
+.PHONY: test-dir-pass test-dir-fail test-dir test-dir-macro \
+test-dependent-file file-compare-pass file-compare-fail file-compare-macro record-count-csv \
+update-file-modified-date update-file-modified-date-macro split-file_004 \
+load-csv-into-db-overwrite load-csv-into-db-append test-database test-table \
+record-count-table execute-sql makefile-list help-makefile table-metadata \
+compact-database backup-database log-rotate
 
 test-dir-pass: etc/
 	@[[ -d $< ]] \
@@ -350,5 +355,7 @@ log-rotate: mock-logfile.log
 
 #sql_template_from_csv
 
+#directory_listing
 
+#makefile_graph
 
