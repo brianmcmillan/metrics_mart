@@ -26,7 +26,6 @@ define help
 	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 endef
 
-
 ###############################################################################
 all: run ## Executes the default make task.
 info: help info/variables documentation ## Generates the informational files.
@@ -39,37 +38,17 @@ deploy: deploy/local ## Deploys a local web server.
 unit-tests: mock-uninstalldirs mock-data test-macro ## Run unit tests
 
 .PHONY: all info check installcheck install uninstall run deploy help documentation \
-	table_metadata uninstalldirs log_rotate compact_database info/variables template/src_from_csv
+	table_metadata installdirs uninstalldirs log_rotate compact_database info/variables template/src_from_csv
 
 .FORCE:
 
 ################################################################################
-# Documentation                                                                #
+# Configuration and utilities                                                               #
 ################################################################################
-help: ## List of all makefile tasks.
-	@$(help)
-
-documentation: svc/doc/directory_listing.txt ## Builds the documentation files for the build. (e.g. schema docs, data flow diagrams)
-
-#documentation: svc/doc/directory_listing.txt svc/doc/makefile_graph.png svc/doc/er_diagram.pdf ## Builds the documentation files for the build. (e.g. schema docs, data flow diagrams)
-
-svc/doc/directory_listing.txt: .FORCE
-	@$(directory-listing)
-
-svc/doc/makefile_graph.png: .FORCE
-	@$(makefile-graph)
-
-table_metadata: svc/db/online_retail.db
-	@$(table_metadata)
-
-
-
-
-
-svc/doc/er_diagram.pdf: REL_FILE=""
-svc/doc/er_diagram.pdf:	DBFILE=svc/db/online_retail.db
-svc/doc/er_diagram.pdf: svc/db/online_retail.db .FORCE
-	@$(er_diagram)
+installdirs: ## Creates the project directories.
+	@echo $(DTS)    [INFO] - Executing $@
+	@mkdir -p svc/load/metrics/discrete
+	@mkdir -p svc/load/SensorPush/OUTDOOR_01/
 
 uninstalldirs: ## Removes the project directories. "make uninstall"
 	@echo $(DTS)    [INFO] - Executing $@
@@ -81,14 +60,35 @@ log_rotate: <path/to/log_file> ## Rotates log files.
 compact_database: svc/db/online_retail.db ## Database maintenance scripts.
 	@$(compact_database)
 
-
-
 .PHONY: template/src_from_csv
 template/src_from_csv: ## Create source table from CSV template (make template/src_from_csv CSVPATH=<path/to/file.csv).
 	@$(sql_template_from_csv)
 
 ################################################################################
-# Tests                                                                        #
+# Documentation                                                                #
+################################################################################
+help: ## List of all makefile tasks.
+	@$(help)
+
+documentation: svc/doc/directory_listing.txt svc/doc/makefile_graph.png table_metadata svc/doc/er_diagram.pdf ## Creates the documentation files for the build. (e.g. schema docs, data flow diagrams)
+
+svc/doc/directory_listing.txt: .FORCE
+	@$(directory-listing)
+
+svc/doc/makefile_graph.png: .FORCE
+	@$(makefile-graph)
+
+table_metadata: svc/db/online_retail.db
+	@$(table_metadata)
+
+svc/doc/er_diagram.pdf: REL_FILE=""
+svc/doc/er_diagram.pdf:	DBFILE=svc/db/online_retail.db
+svc/doc/er_diagram.pdf: svc/db/online_retail.db .FORCE
+	@$(er_diagram)
+
+
+################################################################################
+# Integration Tests                                                                        #
 ################################################################################
 .PHONY: test/inputs test/outputs test/database metrics metrics/SRC_online_retail_II_001
 
@@ -139,13 +139,7 @@ build/local: svc/db/online_retail.db
 deploy/local: build/local
 	@echo $(DTS)     [INFO] - Starting server on http://$(strip $(LOCAL_ADDRESS)):$(LOCAL_PORT)
 	@$(DATASETTE) serve opt/local/ --host $(LOCAL_ADDRESS) --port $(LOCAL_PORT) -o
-
-
-
-
-
-
-
+	
 
 svc/load/SensorPush/OUTDOOR_02.csv: HEADER="source_line_number,provider_code,load_dts,value_dts,temperature_fahrenheit,relative_humidity_percent"
 svc/load/SensorPush/OUTDOOR_02.csv: SOURCE=svc/load/SensorPush/OUTDOOR_01/SensorPushData.zip
@@ -200,11 +194,6 @@ svc/load/SensorPush/OUTDOOR_01/SensorPushData.zip:
 tmp/source/OUTDOOR_01/SensorPushData.zip:
 	@$(test_file)	
 
-.PHONY: installdirs
-installdirs: ## Creates the project directories.
-	@echo $(DTS)    [INFO] - Executing $@
-	@mkdir -p svc/load/metrics/discrete
-	@mkdir -p svc/load/SensorPush/OUTDOOR_01/
 
 unzip_SensorPush/OUTDOOR_01: svc/load/SensorPush/OUTDOOR_01/SensorPushData.zip
 	@if test -s $<; \
@@ -272,5 +261,4 @@ svc/load/metrics/discrete/load.csv
 etc/test/discrete_metrics_header.csv: .FORCE
 	echo "provider_code,load_dts,resource_code,value_dts,metric_code,value" > $@
 
-test_discrete_metrics_header:
 		
