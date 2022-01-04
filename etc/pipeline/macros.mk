@@ -207,6 +207,19 @@ endef
 #	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 #endef
 
+define directory-listing
+	@#<path/to/directory_listing.txt>(colon)(space).FORCE
+	@$(TREE) --prune > $@
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created directory list at $@\"
+endef	
+
+define makefile-graph
+	@#<path/to/makefile_graph.png>(colon)(space).FORCE
+	@$(NODEGRAPH) --direction LR | $(GRAPHVIZDOT) -Tpng > $@
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created makefile diagram at $@\"
+endef
+
+
 define vega_report_from_api
 	@#<path/to/export_file.html>(colon)(space)VIZTITLE=<report title>
 	@#<path/to/export_file.html>(colon)(space)VIZTEMPLATE=<path/to/viz_template.vega>

@@ -6,6 +6,7 @@
 .PHONY: mock-file_001.csv mock-file_002.csv mock-file_003.csv mock-file_003a.csv \
 mock-file_004.csv mock-file_004.xlsx mock-file_004.xlsx mock-logfile.log
 
+
 mock-uninstalldirs: ##Uninstall mack data sets
 	@rm -rf etc/test/* tmp/*
 
@@ -89,14 +90,17 @@ split-file_004 etc/test/file_005.csv \
 load-csv-into-db-overwrite load-csv-into-db-append \
 test-database test-table record-count-table execute-sql \
 etc/test/FILE_005_001_query_001.csv etc/test/load/FILE_005_001_query_001.json etc/test/load/FILE_005_001_query_001_nl.json \
-table-metadata etc/test/er-diagram.pdf compact-database backup-database log-rotate
+table-metadata etc/test/er-diagram.pdf compact-database backup-database log-rotate \
+etc/test/directory_listing.txt etc/test/makefile_graph.png
 
-.PHONY: test-dir-pass test-dir-fail test-dir test-dir-macro \
+
+.PHONY: test-dir-pass test-dir-fail etc1/ test-dir test-dir-macro \
 test-dependent-file file-compare-pass file-compare-fail file-compare-macro record-count-csv \
 update-file-modified-date update-file-modified-date-macro split-file_004 \
 load-csv-into-db-overwrite load-csv-into-db-append test-database test-table \
 record-count-table execute-sql makefile-list help-makefile table-metadata \
 compact-database backup-database log-rotate
+
 
 test-dir-pass: etc/
 	@[[ -d $< ]] \
@@ -298,8 +302,8 @@ makefile-list:
 	@echo $(MAKEFILE_LIST)
 
 help-makefile: 
-	grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(word 1, $(MAKEFILE_LIST)) | sort | \
-	awk 'BEGIN {FS = ":.*?## "};\
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(word 1, $(MAKEFILE_LIST)) | sort | \
+	awk 'BEGIN {FS = ":.*?## "}; \
 	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
 #table-metadata
@@ -348,6 +352,17 @@ log-rotate: mock-logfile.log
 	@mv $(LOGFILEPATH) $(basename $(LOGFILEPATH))_$(shell date +%Y-%m-%d).log
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Rotated $(LOGFILEPATH) into $(basename $(LOGFILEPATH))_$(shell date +%Y-%m-%d).txt\"
 
+#directory-listing
+etc/test/directory_listing.txt: .FORCE
+	@#<path/to/directory_listing.txt>(colon)(space).FORCE
+	@$(TREE) --prune > $@
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created directory list at $@\"
+
+#makefile-graph
+etc/test/makefile_graph.png: .FORCE
+	@#<path/to/directory_listing.txt>(colon)(space).FORCE
+	@$(NODEGRAPH) --direction LR | $(GRAPHVIZDOT) -Tpng > $@
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created makefile diagram at $@\"
 
 #vega_report_from_api
 
@@ -355,7 +370,7 @@ log-rotate: mock-logfile.log
 
 #sql_template_from_csv
 
-#directory_listing
 
-#makefile_graph
 
+# load-test
+# ab -n 100 -c 10 https://sales-5keoceam4q-uc.a.run.app/sales/BLNK_STOCK_CODE_PREFERRED_DESCRIPTION_001.json

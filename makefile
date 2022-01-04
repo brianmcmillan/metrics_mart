@@ -53,17 +53,18 @@ documentation: svc/doc/directory_listing.txt ## Builds the documentation files f
 
 #documentation: svc/doc/directory_listing.txt svc/doc/makefile_graph.png svc/doc/er_diagram.pdf ## Builds the documentation files for the build. (e.g. schema docs, data flow diagrams)
 
+svc/doc/directory_listing.txt: .FORCE
+	@$(directory-listing)
+
+svc/doc/makefile_graph.png: .FORCE
+	@$(makefile-graph)
 
 table_metadata: svc/db/online_retail.db
 	@$(table_metadata)
 
-svc/doc/directory_listing.txt: .FORCE
-	@echo $(DTS)    [INFO] - Executing $@
-	@$(TREE) --prune > svc/doc/directory_listing.txt
 
-svc/doc/makefile_graph.png: .FORCE
-	@echo $(DTS)    [INFO] - Executing $@
-	@$(NODEGRAPH) --direction LR | $(GRAPHVIZDOT) -Tpng > $@
+
+
 
 svc/doc/er_diagram.pdf: REL_FILE=""
 svc/doc/er_diagram.pdf:	DBFILE=svc/db/online_retail.db
