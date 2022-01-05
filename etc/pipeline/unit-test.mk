@@ -387,45 +387,25 @@ etc/test/load-test-report-google: .FORCE
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created report at $(OUTPUTFILE)\"
 
 
-# load-test-metric
+# load-test-metric-discrete
 etc/test/load-test-google: URL=https://www.google.com/
-etc/test/load-test-google: PARAMETERS="-n 10 -c 1"
+etc/test/load-test-google: PARAMETERS="-n 100 -c 10"
 etc/test/load-test-google: OUTPUTFILE=$(basename $@)_$(shell date -u +"%Y-%m-%dT%H:%M:%SZ").csv
-etc/test/load-test-google: HEADER="provider_code,load_dts,resource_code,resource_qualifier,value_dts,connection_time_ms,processing_time_ms,total_time_ms,wait_time_ms"
+etc/test/load-test-google: HEADER="provider_code,load_dts,resource_code,resource_qualifier,metric_code,value_dts,metric_value"
 etc/test/load-test-google: .FORCE
 	@#<path/to/output/file.tsv>(colon)(space)URL=<URL to be tested>
 	@#<path/to/output/file.tsv>(colon)(space)PARAMETERS="-n 100 -c 10" <n=number of iterations>, c=<concurrent connections>
 	@#<path/to/output/file.tsv>(colon)(space)OUTPUTFILE=<path/to/output/file.txt>
 	@#<path/to/output/file.tsv>(colon)(space)HEADER=<columns in the discrete metrics file format>
-	@#Source Header: starttime=Date Timestamp,	seconds=UNIX timestamp, ctime=connection_time_ms, dtime=processing_time_ms, ttime=total_time_ms, wait=wait_time_ms
+	@#Source Header: starttime=Date Timestamp,	(6)seconds=UNIX timestamp, (7)ctime=connection_time_ms, (8)dtime=processing_time_ms, (9)ttime=total_time_ms, (10)wait=wait_time_ms
 	@#Use: histogram or pareto of ttime
 	@#echo $(OUTPUTFILE)
 	@#echo $(basename $(OUTPUTFILE)).tmp
 	@ab $(PARAMETERS) -g $(basename $(OUTPUTFILE)).tmp $(URL)
 	@echo $(HEADER) > $(OUTPUTFILE)
-	@gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","ab " $(PARAMETERS) " $(URL)",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$7, $$8, $$9, $$10 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
+	@gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "connection_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$7 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
+	@gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "processing_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$8 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
+	@gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "total_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$9 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
+	@gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "wait_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$10 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
 	@rm -f $(basename $(OUTPUTFILE)).tmp
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created discrete metric file at $(OUTPUTFILE)\"
-
-
-
-
-
-# awk -v OFS='\t' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '{if (NR!=1) { print NR, FILENAME, date, $$6,$$7,$$8,$$9,$$10 }}' etc/test/load-test-google_2022-01-05T17:22:53Z.csv
-# awk -v OFS='\t' '{if (NR!=1) { print FILENAME, $6, $7, $8, $9, $10 }}' etc/test/load-test-google.tmp
-#date +"%Y-%m-%dT%H:%M:%S%z"
-#date -r 1641403627 +"%Y-%m-%dT%H:%M:%S%z"
-#strftime("%Y-%m-%dT%H:%M:%S%z", $6)
-#gawk -v OFS='\t' '{if (NR!=1) { print FILENAME, strftime("%Y-%m-%dT%H:%M:%S%z",$6), $6, $7, $8, $9, $10 }}' etc/test/load-test-google.tmp
-
-
-
-awk -v OFS='\t' '{if (NR!=1) { print FILENAME, {date -r 1641403627 +"%Y-%m-%dT%H:%M:%S%z"} , $6, $7, $8, $9, $10 }}' etc/test/load-test-google.tmp
-
-
-
-#&& (awk -v OFS='\t' -v date="$$(date -u +"%Y-%m-%dT%H:%M:%SZ")" '{if (NR!=1) { print NR, FILENAME, date, $$6,$$7,$$8,$$9,$$10 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE);
-#awk -v OFS='\t' '{print $6,$7,$8,$9,$10}' etc/test/load-test-google_2022-01-04T22:21:15Z.tmp
-#ab -l -n 100 -c 10 -e $(PATH)$(subst ?=,_,$(subst /,,$(subst ://,_,$(subst .,_,$(URL))))).csv $(URL)	
-#echo $(PATH)$(subst ?=,_,$(subst /,,$(subst ://,_,$(subst .,_,$(URL)))))
-#echo $(basename $@)
