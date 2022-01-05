@@ -409,8 +409,28 @@ etc/test/load-test-metrics-google.csv: .FORCE
 	@rm -f $(basename $@).tmp
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created discrete metric file at $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv\"
 
+
+#sql_template_from_csv
+template-sql-SRC_TABLE: 
+	@#make template-sql-SRC_TABLE CSVPATH=<path/to/file.csv> OUTPUTPATH=<path/to/output/directory>
+	@#make template-sql-SRC_TABLE CSVPATH=etc/test/file_005.csv OUTPUTPATH=etc/test
+	@echo $(DTS)    [INFO] - Creating script for SRC_$(notdir $(basename $(CSVPATH)))_###_create from $(CSVPATH)
+	@if test -s $(CSVPATH); then echo [PASS] - $(CSVPATH) file exists; \
+	else echo [FAIL] - $(CSVPATH) file does not exist; fi
+	@$(SQLITE3) tmp/temp.db ".import --csv $(CSVPATH) SRC_$(notdir $(basename $(CSVPATH)))_###"
+	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###"
+	@echo "--$(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql" \
+	> etc/sql/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
+	@echo "-------------------------------------------------------------------------------" \
+	>> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
+	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###" \
+	>> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
+	@rm tmp/temp.db
+
+test-sql-template-SRC: .FORCE
+	@$(shell (make template-sql-SRC_TABLE CSVPATH=etc/test/file_005.csv OUTPUTPATH=etc/test))
+
+
 #vega_report_from_api
 
 #vega_report_from_file
-
-#sql_template_from_csv
