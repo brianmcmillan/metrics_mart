@@ -219,6 +219,25 @@ define makefile-graph
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created makefile diagram at $@\"
 endef
 
+define ping-test
+	@#<name-of-test>(colon)(space)URL=<URL to be tested>
+	@#<name-of-test>(colon)(space)[.FORCE]	
+	@$(if $(shell curl $(strip $(URL)) -fIs | head -n 1), \
+	echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [PASS]    $@    \"$(strip $(URL)) - $(shell curl $(strip $(URL)) -fIs | head -n 1), \
+	echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [FAIL]    $@    \"$(strip $(URL)) is unavailable)\"
+endef	
+
+define load-test-report
+	@#<path/to/output/file.txt>(colon)(space)URL=<URL to be tested>
+	@#<path/to/output/file.txt>(colon)(space)PARAMETERS="-n 100 -c 10" <n=number of iterations>, c=<concurrent connections>
+	@#<path/to/output/file.txt>(colon)(space).FORCE
+	@ab $(PARAMETERS) -g $(basename $@).tmp $(URL) > $(basename $@)_$(shell date +%Y-%m-%d).txt
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created report at $@\"
+endef	
+
+define load-test
+
+endef
 
 define vega_report_from_api
 	@#<path/to/export_file.html>(colon)(space)VIZTITLE=<report title>
