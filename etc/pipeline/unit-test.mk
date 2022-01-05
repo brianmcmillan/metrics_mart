@@ -91,7 +91,8 @@ load-csv-into-db-overwrite load-csv-into-db-append \
 test-database test-table record-count-table execute-sql \
 etc/test/FILE_005_001_query_001.csv etc/test/load/FILE_005_001_query_001.json etc/test/load/FILE_005_001_query_001_nl.json \
 table-metadata etc/test/er-diagram.pdf compact-database backup-database log-rotate \
-etc/test/directory_listing.txt etc/test/makefile_graph.png
+etc/test/directory_listing.txt etc/test/makefile_graph.png \
+etc/test/load-test-report-google etc/test/load-test-google
 
 
 .PHONY: test-dir-pass test-dir-fail etc1/ test-dir test-dir-macro \
@@ -99,7 +100,7 @@ test-dependent-file file-compare-pass file-compare-fail file-compare-macro recor
 update-file-modified-date update-file-modified-date-macro split-file_004 \
 load-csv-into-db-overwrite load-csv-into-db-append test-database test-table \
 record-count-table execute-sql makefile-list help-makefile table-metadata \
-compact-database backup-database log-rotate
+compact-database backup-database log-rotate etc/test/load-test-report-google etc/test/load-test-google
 
 
 test-dir-pass: etc/
@@ -371,7 +372,7 @@ etc/test/makefile_graph.png: .FORCE
 #sql_template_from_csv
 
 
-#simple-test
+#ping-test
 
 
 #load-test-report
@@ -382,11 +383,8 @@ etc/test/load-test-report-google: .FORCE
 	@#<path/to/output/file.tsv>(colon)(space)URL=<URL to be tested>
 	@#<path/to/output/file.tsv>(colon)(space)PARAMETERS="-n 100 -c 10" <n=number of iterations>, c=<concurrent connections>
 	@#<path/to/output/file.tsv>(colon)(space)OUTPUTFILE=<path/to/output/file.txt>
-	@#Header: starttime=Date Timestamp,	seconds=UNIX timestamp, ctime=connection_time_ms, dtime=processing_time_ms, ttime=total_time_ms, wait=wait_time_ms
-	@#Use: histogram or pareto of ttime
-	ab $(PARAMETERS) -g $(basename $@).tmp $(URL) > $(OUTPUTFILE)
-
-
+	@ab $(PARAMETERS) -g $(basename $@).tmp $(URL) > $(OUTPUTFILE)
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created report at $(OUTPUTFILE)\"
 
 
 # load-test-metric
@@ -395,15 +393,19 @@ etc/test/load-test-google: PARAMETERS="-n 10 -c 1"
 etc/test/load-test-google: OUTPUTFILE=$(basename $@)_$(shell date -u +"%Y-%m-%dT%H:%M:%SZ").csv
 etc/test/load-test-google: HEADER="provider_code,load_dts,resource_code,resource_qualifier,value_dts,connection_time_ms,processing_time_ms,total_time_ms,wait_time_ms"
 etc/test/load-test-google: .FORCE
-	@#<path/to/output/file.tsv>(colon)(space)
-	@#Header: starttime=Date Timestamp,	seconds=UNIX timestamp, ctime=connection_time_ms, dtime=processing_time_ms, ttime=total_time_ms, wait=wait_time_ms
+	@#<path/to/output/file.tsv>(colon)(space)URL=<URL to be tested>
+	@#<path/to/output/file.tsv>(colon)(space)PARAMETERS="-n 100 -c 10" <n=number of iterations>, c=<concurrent connections>
+	@#<path/to/output/file.tsv>(colon)(space)OUTPUTFILE=<path/to/output/file.txt>
+	@#<path/to/output/file.tsv>(colon)(space)HEADER=<columns in the discrete metrics file format>
+	@#Source Header: starttime=Date Timestamp,	seconds=UNIX timestamp, ctime=connection_time_ms, dtime=processing_time_ms, ttime=total_time_ms, wait=wait_time_ms
 	@#Use: histogram or pareto of ttime
 	@#echo $(OUTPUTFILE)
 	@#echo $(basename $(OUTPUTFILE)).tmp
 	@ab $(PARAMETERS) -g $(basename $(OUTPUTFILE)).tmp $(URL)
 	@echo $(HEADER) > $(OUTPUTFILE)
-	gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","ab " $(PARAMETERS) " $(URL)",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$7, $$8, $$9, $$10 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
+	@gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","ab " $(PARAMETERS) " $(URL)",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$7, $$8, $$9, $$10 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
 	@rm -f $(basename $(OUTPUTFILE)).tmp
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created discrete metric file at $(OUTPUTFILE)\"
 
 
 
