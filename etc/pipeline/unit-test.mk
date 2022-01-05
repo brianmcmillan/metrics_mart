@@ -92,17 +92,14 @@ test-database test-table record-count-table execute-sql \
 etc/test/FILE_005_001_query_001.csv etc/test/load/FILE_005_001_query_001.json etc/test/load/FILE_005_001_query_001_nl.json \
 table-metadata etc/test/er-diagram.pdf compact-database backup-database log-rotate \
 etc/test/directory_listing.txt etc/test/makefile_graph.png \
-etc/test/load-test-report-google.txt etc/test/load-test-google ping-test-pass ping-test-fail
-
+etc/test/load-test-report-google.txt etc/test/load-test-metrics-google.csv ping-test-pass ping-test-fail
 
 .PHONY: test-dir-pass test-dir-fail etc1/ test-dir test-dir-macro \
 test-dependent-file file-compare-pass file-compare-fail file-compare-macro record-count-csv \
 update-file-modified-date update-file-modified-date-macro split-file_004 \
 load-csv-into-db-overwrite load-csv-into-db-append test-database test-table \
 record-count-table execute-sql makefile-list help-makefile table-metadata \
-compact-database backup-database log-rotate etc/test/load-test-google \
-ping-test-pass ping-test-fail
-
+compact-database backup-database log-rotate ping-test-pass ping-test-fail
 
 test-dir-pass: etc/
 	@[[ -d $< ]] \
@@ -366,13 +363,6 @@ etc/test/makefile_graph.png: .FORCE
 	@$(NODEGRAPH) --direction LR | $(GRAPHVIZDOT) -Tpng > $@
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created makefile diagram at $@\"
 
-#vega_report_from_api
-
-#vega_report_from_file
-
-#sql_template_from_csv
-
-
 #ping-test
 ping-test-pass: URL=https://www.google.com/
 ping-test-pass: .FORCE
@@ -398,28 +388,29 @@ etc/test/load-test-report-google.txt: .FORCE
 	@#<path/to/output/file.txt>(colon)(space)PARAMETERS="-n 100 -c 10" <n=number of iterations>, c=<concurrent connections>
 	@#<path/to/output/file.txt>(colon)(space).FORCE
 	@ab $(PARAMETERS) -g $(basename $@).tmp $(URL) > $(basename $@)_$(shell date +%Y-%m-%d).txt
+	@rm -f $(basename $@).tmp
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created report at $@\"
 
 # load-test-metric-discrete
-etc/test/load-test-google: URL=https://www.google.com/
-etc/test/load-test-google: PARAMETERS="-n 10 -c 1"
-etc/test/load-test-google: OUTPUTFILE=$(basename $@)_$(shell date -u +"%Y-%m-%dT%H:%M:%SZ").csv
-etc/test/load-test-google: HEADER="provider_code,load_dts,resource_code,resource_qualifier,metric_code,value_dts,metric_value"
-etc/test/load-test-google: .FORCE
-	@#<path/to/output/file.tsv>(colon)(space)URL=<URL to be tested>
-	@#<path/to/output/file.tsv>(colon)(space)PARAMETERS="-n 100 -c 10" <n=number of iterations>, c=<concurrent connections>
-	@#<path/to/output/file.tsv>(colon)(space)OUTPUTFILE=$(basename $@)_$(shell date -u +"%Y-%m-%dT%H:%M:%SZ").csv
-	@#<path/to/output/file.tsv>(colon)(space)HEADER="provider_code,load_dts,resource_code,resource_qualifier,metric_code,value_dts,metric_value"
-	@#<path/to/output/file.tsv>(colon)(space).FORCE
+etc/test/load-test-metrics-google.csv: URL=https://www.google.com/
+etc/test/load-test-metrics-google.csv: PARAMETERS="-n 10 -c 1"
+etc/test/load-test-metrics-google.csv: .FORCE
+	@#<path/to/output/file.csv>(colon)(space)URL=<URL to be tested>
+	@#<path/to/output/file.csv>(colon)(space)PARAMETERS="-n 100 -c 10" <n=number of iterations>, c=<concurrent connections>
+	@#<path/to/output/file.csv>(colon)(space).FORCE
 	@#Source Header: starttime=Date Timestamp,	(6)seconds=UNIX timestamp, (7)ctime=connection_time_ms, (8)dtime=processing_time_ms, (9)ttime=total_time_ms, (10)wait=wait_time_ms
-	@#Use: histogram or pareto of ttime
-	@#echo $(OUTPUTFILE)
-	@#echo $(basename $(OUTPUTFILE)).tmp
-	@ab $(PARAMETERS) -g $(basename $(OUTPUTFILE)).tmp $(URL)
-	@echo $(HEADER) > $(OUTPUTFILE)
-	@gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "connection_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$7 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
-	@gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "processing_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$8 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
-	@gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "total_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$9 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
-	@gawk -v OFS=',' '{if (NR!=1) { print "$(OUTPUTFILE)",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "wait_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$10 }}' $(basename $(OUTPUTFILE)).tmp >> $(OUTPUTFILE)
-	@rm -f $(basename $(OUTPUTFILE)).tmp
-	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created discrete metric file at $(OUTPUTFILE)\"
+	@#Use: histogram or pareto of total_time_ms (ttime)
+	@ab $(PARAMETERS) -g $(basename $@).tmp $(URL)
+	@echo "provider_code,load_dts,resource_code,resource_qualifier,metric_code,value_dts,metric_value" > $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv
+	@gawk -v OFS=',' '{if (NR!=1) { print "$@",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "connection_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$7 }}' $(basename $@).tmp >> $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv
+	@gawk -v OFS=',' '{if (NR!=1) { print "$@",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "processing_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$8 }}' $(basename $@).tmp >> $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv
+	@gawk -v OFS=',' '{if (NR!=1) { print "$@",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "total_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$9 }}' $(basename $@).tmp >> $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv
+	@gawk -v OFS=',' '{if (NR!=1) { print "$@",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "wait_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$10 }}' $(basename $@).tmp >> $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv
+	@rm -f $(basename $@).tmp
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created discrete metric file at $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv\"
+
+#vega_report_from_api
+
+#vega_report_from_file
+
+#sql_template_from_csv
