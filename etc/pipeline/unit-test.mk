@@ -401,7 +401,7 @@ etc/test/load-test-metrics-google.csv: .FORCE
 	@#Source Header: starttime=Date Timestamp,	(6)seconds=UNIX timestamp, (7)ctime=connection_time_ms, (8)dtime=processing_time_ms, (9)ttime=total_time_ms, (10)wait=wait_time_ms
 	@#Use: histogram or pareto of total_time_ms (ttime)
 	@ab $(PARAMETERS) -g $(basename $@).tmp $(URL)
-	@echo "provider_code,load_dts,resource_code,resource_qualifier,metric_code,value_dts,metric_value" > $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv
+	@echo "provider_code,load_dts,resource_code,resource_qualifier,metric_code,metric_dts,metric_value" > $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv
 	@gawk -v OFS=',' '{if (NR!=1) { print "$@",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "connection_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$7 }}' $(basename $@).tmp >> $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv
 	@gawk -v OFS=',' '{if (NR!=1) { print "$@",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "processing_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$8 }}' $(basename $@).tmp >> $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv
 	@gawk -v OFS=',' '{if (NR!=1) { print "$@",strftime("%Y-%m-%dT%H:%M:%S%z"),"$(URL)","\"ab " $(PARAMETERS) " $(URL)\"", "total_time_ms",strftime("%Y-%m-%dT%H:%M:%S%z",$$6), $$9 }}' $(basename $@).tmp >> $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv
