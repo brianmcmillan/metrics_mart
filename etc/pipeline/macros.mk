@@ -251,6 +251,21 @@ define load-test-metrics
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created discrete metric file at $(basename $@)_$(shell date +%Y-%m-%dT%H:%M:%S).csv\"
 endef
 
+define sql-template-create-src-table
+	@#make template-sql-SRC_TABLE CSVPATH=<path/to/file.csv> OUTPUTPATH=<path/to/output/directory>
+	@#make template-sql-SRC_TABLE CSVPATH=etc/test/FILE_005.csv OUTPUTPATH=etc/test
+	@$(SQLITE3) tmp/temp.db ".import --csv $(CSVPATH) SRC_$(notdir $(basename $(CSVPATH)))_###"
+	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###"	
+	@echo "--$(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql" \
+	> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
+	@echo "-------------------------------------------------------------------------------" \
+	>> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
+	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###" \
+	>> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
+	@rm -f tmp/temp.db
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created script for SRC_$(notdir $(basename $(CSVPATH)))_###_create from $(CSVPATH)\"
+endef
+
 define vega_report_from_api
 	@#<path/to/export_file.html>(colon)(space)VIZTITLE=<report title>
 	@#<path/to/export_file.html>(colon)(space)VIZTEMPLATE=<path/to/viz_template.vega>
@@ -275,19 +290,4 @@ define vega_report_from_file
 	@echo "\"title\":\"$(VIZTITLE)\"," >> $@
 	@cat $(VIZTEMPLATE) >> $@
 	@cat etc/app/vega_embed_footer.viz >> $@
-endef
-
-define sql_template_from_csv
-	@#make template-sql-SRC_TABLE CSVPATH=<path/to/file.csv> OUTPUTPATH=<path/to/output/directory>
-	@#make template-sql-SRC_TABLE CSVPATH=etc/test/FILE_005.csv OUTPUTPATH=etc/test
-	@$(SQLITE3) tmp/temp.db ".import --csv $(CSVPATH) SRC_$(notdir $(basename $(CSVPATH)))_###"
-	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###"	
-	@echo "--$(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql" \
-	> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
-	@echo "-------------------------------------------------------------------------------" \
-	>> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
-	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###" \
-	>> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
-	@rm -f tmp/temp.db
-	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created script for SRC_$(notdir $(basename $(CSVPATH)))_###_create from $(CSVPATH)\"
 endef
