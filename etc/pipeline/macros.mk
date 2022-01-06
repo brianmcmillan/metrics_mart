@@ -278,17 +278,16 @@ define vega_report_from_file
 endef
 
 define sql_template_from_csv
-	@#make template/src_from_csv CSVPATH=<path/to/file.csv>
-	@echo $(DTS)    [INFO] - Creating script for SRC_$(notdir $(basename $(CSVPATH)))_###_create from $(CSVPATH)
-	@if test -s $(CSVPATH); then echo [PASS] - $(CSVPATH) file exists; \
-	else echo [FAIL] - $(CSVPATH) file does not exist; fi
+	@#make template-sql-SRC_TABLE CSVPATH=<path/to/file.csv> OUTPUTPATH=<path/to/output/directory>
+	@#make template-sql-SRC_TABLE CSVPATH=etc/test/FILE_005.csv OUTPUTPATH=etc/test
 	@$(SQLITE3) tmp/temp.db ".import --csv $(CSVPATH) SRC_$(notdir $(basename $(CSVPATH)))_###"
-	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###"
-	@echo "--etc/sql/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql" \
-	> etc/sql/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
+	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###"	
+	@echo "--$(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql" \
+	> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
 	@echo "-------------------------------------------------------------------------------" \
-	>> etc/sql/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
+	>> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
 	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###" \
-	>> etc/sql/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
-	@rm tmp/temp.db
+	>> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
+	@rm -f tmp/temp.db
+	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Created script for SRC_$(notdir $(basename $(CSVPATH)))_###_create from $(CSVPATH)\"
 endef

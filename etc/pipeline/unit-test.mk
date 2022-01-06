@@ -413,9 +413,9 @@ etc/test/load-test-metrics-google.csv: .FORCE
 #sql_template_from_csv
 template-sql-SRC_TABLE: 
 	@#make template-sql-SRC_TABLE CSVPATH=<path/to/file.csv> OUTPUTPATH=<path/to/output/directory>
-	@#make template-sql-SRC_TABLE CSVPATH=etc/test/file_006.csv OUTPUTPATH=etc/test
+	@#make template-sql-SRC_TABLE CSVPATH=etc/test/FILE_005.csv OUTPUTPATH=etc/test
 	@$(SQLITE3) tmp/temp.db ".import --csv $(CSVPATH) SRC_$(notdir $(basename $(CSVPATH)))_###"
-	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###"
+	@$(SQLITE3) tmp/temp.db ".schema SRC_$(notdir $(basename $(CSVPATH)))_###"	
 	@echo "--$(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql" \
 	> $(OUTPUTPATH)/SRC_$(notdir $(basename $(CSVPATH)))_###_create.sql
 	@echo "-------------------------------------------------------------------------------" \
@@ -432,3 +432,4 @@ template-sql-SRC_TABLE:
 #vega_report_from_api
 
 #vega_report_from_file
+
