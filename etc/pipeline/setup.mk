@@ -30,10 +30,10 @@ uninstall-homebrew:
 brew uninstall <package>
 
 install-homebrew: 
-brew install coreutils zlib tree sqlite aspell graphviz imagemagick makefile2graph xmlto git datamash pandoc xsv
+brew install coreutils zlib tree gawk sqlite aspell graphviz imagemagick makefile2graph xmlto git datamash pandoc xsv
 
 # Setup Python environment
-brew install pyenv pandoc
+brew install pyenv
 
 # identify the current python version: https://www.python.org/downloads/ (e.g. 3.10.1 on 2021-12-15)
 pyenv install 3.9.0
@@ -45,9 +45,12 @@ pip -V
 python3 -m pip install --upgrade pip
 python3 -m pip install makefile2dot pygraphviz eralchemy csvkit sqlite-utils datasette datasette-vega
 
-pip install --upgrade makefile2dot pygraphviz eralchemy csvkit \
-sqlite-utils datasette datasette-vega datasette-cluster-map datasette-copyable datasette-pretty-json \
+pip install --upgrade makefile2dot pygraphviz eralchemy csvkit sqlite-utils \
+datasette datasette-vega datasette-cluster-map datasette-copyable datasette-pretty-json \
 datasette-yaml
+
+# sqlfluff (linter)
+# sqllineage (query documentation)
 
 pip list
 
