@@ -9,6 +9,7 @@ LOCAL_PORT := 8001
 # Program locations (which <utility>)
 PYENVDIR := /Users/brianmcmillan/.pyenv/shims
 SHELL := $(shell which bash)
+GAWK := $(shell which gawk)
 SQLITE3 := $(shell which sqlite3)
 SPLIT := $(shell which gsplit)
 TREE := $(shell which tree)
@@ -33,8 +34,11 @@ LIST_CSV = $(shell find $(dir $@) -type f -name '*.csv' -not -name 'load.csv')
 
 info-variables: ## List the variables in the makefile.
 	@echo $(DTS)    [INFO] - Executing $@
+	@echo LOCAL_ADDRESS = $(LOCAL_ADDRESS)
+	@echo LOCAL_PORT = $(LOCAL_PORT)
 	@echo "-- Program paths ----------------------------------------------------"
 	@echo SHELL = $(SHELL)
+	@echo GAWK = $(GAWK)	
 	@echo SQLITE3 = $(SQLITE3)
 	@echo GRAPHVIZDOT = $(GRAPHVIZDOT)
 	@echo SPLIT = $(SPLIT)
