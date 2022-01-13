@@ -192,9 +192,9 @@ define backup-database
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Backed up $< into $(BACKUPFILEPATH)\"
 endef
 
-define log_rotate
-	@#log_rotate:(colon)(space)LOGFILEPATH=<path/to/logfile>
-	@#log_rotate:(colon)(space)<dependencies>
+define log-rotate
+	@#log-rotate:(colon)(space)LOGFILEPATH=<path/to/logfile>
+	@#log-rotate:(colon)(space)<dependencies>
 	@mv $(LOGFILEPATH) $(basename $(LOGFILEPATH))_$(shell date +%Y-%m-%d).log
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Rotated $(LOGFILEPATH) into $(basename $(LOGFILEPATH))_$(shell date +%Y-%m-%d).txt\"
 endef
