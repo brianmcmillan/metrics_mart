@@ -90,7 +90,7 @@ split-file_004 etc/test/file_005.csv \
 load-csv-into-db-overwrite load-csv-into-db-append \
 test-database test-table record-count-table execute-sql \
 etc/test/FILE_005_001_query_001.csv etc/test/load/FILE_005_001_query_001.json etc/test/load/FILE_005_001_query_001_nl.json \
-table-metadata etc/test/er-diagram.pdf compact-database backup-database log-rotate \
+table-metadata compact-database backup-database log-rotate \
 etc/test/directory_listing.txt etc/test/makefile_graph.png \
 etc/test/load-test-report-google.txt etc/test/load-test-metrics-google.csv ping-test-pass ping-test-fail
 
@@ -189,7 +189,7 @@ split-file_004: etc/test/file_004.csv
 	@mkdir -p $(TARGETDIR)
 	@$(SPLIT) -d -a 3 -l $(SPLITSIZE) --additional-suffix=".csv" $< $(TARGETDIR)$(TARGETNAME) \
 	&& echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Splitting file $< by $(SPLITSIZE) lines\" 
-	@$(test-dependent-file)
+	@#$(test-dependent-file)
 
 #extract_csv_from_excel
 etc/test/file_005.csv: TABNAME = "file_004"
@@ -220,9 +220,9 @@ load-csv-into-db-overwrite: etc/test/file_005.csv
 load-csv-into-db-append: DBFILEPATH=etc/test/test.db
 load-csv-into-db-append: TABLE=SRC_$(basename $(<F))_002
 load-csv-into-db-append: etc/test/file_005.csv
-	@#load-<csv file>-<database>(colon)(space)DBFILEPATH=<path/to/database_name.db>
-	@#load-<csv file>-<database>(colon)(space)TABLE=<table_name>
-	@#load-<csv file>-<database>(colon)(space)<path/to/csv_file.csv>
+	@#load-csv-into-db-append(colon)(space)DBFILEPATH=<path/to/database_name.db>
+	@#load-csv-into-db-append(colon)(space)TABLE=<table_name>
+	@#load-csv-into-db-append(colon)(space)<path/to/csv_file.csv>
 	@$(CSVSQL) \
 	--db sqlite:///$(DBFILEPATH) \
 	--create-if-not-exists \
@@ -232,9 +232,12 @@ load-csv-into-db-append: etc/test/file_005.csv
 	--insert $<
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"Loading $< into $(DBFILEPATH)::$(SRC_TABLE)\" 
 
+etc/test/test.db:
+	$(test-file)
+
 #test-database
-test-database: etc/test/test.db
-	@#test-<database.db>(colon)(space)<path/to/database.db>
+test-database2: etc/test/test.db
+	@#test-database(colon)(space)<path/to/database.db>
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@     \"DB $< exists - $(shell $(SQLITE3) $< ".databases")\"
 
 #test-table
@@ -315,18 +318,9 @@ table-metadata: etc/test/test.db
 	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed $@ on $<	\"
 
 #er-diagram
-etc/test/er-diagram.pdf: DBFILEPATH=etc/test/test.db
-etc/test/er-diagram.pdf: REL_FILE=etc/test/er_relationships.txt
-etc/test/er-diagram.pdf: .FORCE etc/test/er_relationships.txt
-	@#<path/to/diagram.type>(colon)(space)DBFILEPATH=<path/to/database_name.db>
-	@#<path/to/diagram.type>(colon)(space)REL_FILE="<path/to/relationship_file.txt>"
-	@#<path/to/diagram.type>(colon)(space)<table_name(s)>"
-	@#Types can be er, pdf, png, dot
-	@$(ERALCHEMY) -i sqlite:///$(DBFILEPATH) -o tmp/$(subst .,,$(notdir $(DBFILEPATH))).er
-	@cat tmp/$(subst .,,$(notdir $(DBFILEPATH))).er $(REL_FILE) > tmp/$(subst .,,$(notdir $(DBFILEPATH)))_2.er || true
-	@$(ERALCHEMY) -i tmp/$(subst .,,$(notdir $(DBFILEPATH)))_2.er -o $@
-	@rm -f tmp/$(subst .,,$(notdir $(DBFILEPATH)))*.er
-	@echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed er-digram and exported to $@\"
+#etc/test/er-diagram.pdf: 
+#	$(ERALCHEMY) -i sqlite:///etc/test/test.db -o $@
+#	@#echo $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")    [INFO]    $@    \"Executed er-digram and exported to $@\"
 
 #compact-database
 compact-database: etc/test/test.db

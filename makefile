@@ -20,7 +20,6 @@ include etc/pipeline/macros.mk
 include etc/pipeline/unit-test.mk
 
 define help
-	@echo $(DTS)    [INFO] - Executing $@
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(word 1, $(MAKEFILE_LIST)) | sort | \
 	awk 'BEGIN {FS = ":.*?## "};\
 	{printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -54,15 +53,14 @@ uninstalldirs: ## Removes the project directories. "make uninstall"
 	@echo $(DTS)    [INFO] - Executing $@
 	@rm -rf svc/db/* svc/doc/* svc/load/* svc/static/* opt/local/static/* opt/local/*
 
-log_rotate: <path/to/log_file> ## Rotates log files.
-	@$(log_rotate)
+log_rotate: LOGFILEPATH=$(LOGFILE) ## Rotates log files.
+log_rotate: 
+	@$(log-rotate)
 
-compact_database: svc/db/online_retail.db ## Database maintenance scripts.
-	@$(compact_database)
+compact_database: $(DBFILE) ## Database maintenance scripts.
+	@$(compact-database)
 
-.PHONY: template/src_from_csv
-template/src_from_csv: ## Create source table from CSV template (make template/src_from_csv CSVPATH=<path/to/file.csv).
-	@$(sql_template_from_csv)
+
 
 ################################################################################
 # Documentation                                                                #
@@ -78,26 +76,24 @@ svc/doc/directory_listing.txt: .FORCE
 svc/doc/makefile_graph.png: .FORCE
 	@$(makefile-graph)
 
-table_metadata: svc/db/online_retail.db
+table_metadata: svc/db/metrics.db
 	@$(table_metadata)
 
-svc/doc/er_diagram.pdf: REL_FILE=""
-svc/doc/er_diagram.pdf:	DBFILE=svc/db/online_retail.db
-svc/doc/er_diagram.pdf: svc/db/online_retail.db .FORCE
-	@$(er_diagram)
+#er_diagrams: 
+#	@echo $(DTS)    [INFO] - Executing $<
+#	@$(ERALCHEMY) -i sqlite:///etc/test/test.db -o etc/test/er_tables.er
 
 
 ################################################################################
-# Integration Tests                                                                        #
+# Integration Tests                                                            #
 ################################################################################
 .PHONY: test/inputs test/outputs test/database metrics metrics/SRC_online_retail_II_001
 
-test/inputs: svc/source/online_retail_II.xlsx
+test-inputs: svc/source/online_retail_II.xlsx
 
-test/outputs: test/database
-	@echo $(DTS)    [INFO] - Executing $@
+test-outputs: test/database
 
-test/database: svc/db/online_retail.db
+test-database: svc/db/online_retail.db
 	$(test_database)
 
 metrics: metrics/SRC_online_retail_II_001 metrics/META_TABLES_001
@@ -139,7 +135,7 @@ build/local: svc/db/online_retail.db
 deploy/local: build/local
 	@echo $(DTS)     [INFO] - Starting server on http://$(strip $(LOCAL_ADDRESS)):$(LOCAL_PORT)
 	@$(DATASETTE) serve opt/local/ --host $(LOCAL_ADDRESS) --port $(LOCAL_PORT) -o
-	
+
 
 svc/load/SensorPush/OUTDOOR_02.csv: HEADER="source_line_number,provider_code,load_dts,value_dts,temperature_fahrenheit,relative_humidity_percent"
 svc/load/SensorPush/OUTDOOR_02.csv: SOURCE=svc/load/SensorPush/OUTDOOR_01/SensorPushData.zip
