@@ -1,11 +1,6 @@
-.DS_Store
-etc/test/*
-etc/test/file_005.csv
-etc/.DS_Store
-etc/test/.DS_Store
-etc/test/file_005.csv
-etc/test/.DS_Store
-etc/.DS_Store
-etc/.DS_Store
+*.DS_Store
 .gitignore
-.DS_Store
+svc/load/.online_retail_II_-_Year_2010-2011.csv.icloud
+.gitignore
+svc/source/.online_retail_II.xlsx.icloud
+svc/load/metrics/discrete/.load.csv.icloud
