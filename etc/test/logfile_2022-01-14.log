@@ -1,0 +1,3 @@
+2021-12-14T20:13:40Z [INFO] table-metadata Executed table-metadata on etc/test/test.db
+2021-12-14T20:13:40Z [INFO] etc/test/er-diagram.pdf Executed er-digram and exported to etc/test/er-diagram.pdf
+2021-12-14T20:13:41Z [INFO] compact-database Optimized etc/test/test.db

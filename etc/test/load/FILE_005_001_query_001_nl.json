@@ -1,0 +1,3 @@
+{"source_line_number": "2", "provider_code": "etc/test/file_004.xlsx::file_004", "load_dts": "2022-01-14T17:19:25Z", "text": "One", "date": "2021-11-08T21:00:00+00:00", "value": "1"}
+{"source_line_number": "3", "provider_code": "etc/test/file_004.xlsx::file_004", "load_dts": "2022-01-14T17:19:25Z", "text": "Two", "date": "2021-11-08T22:00:00+00:00", "value": "2"}
+{"source_line_number": "4", "provider_code": "etc/test/file_004.xlsx::file_004", "load_dts": "2022-01-14T17:19:25Z", "text": "Three", "date": "2021-11-08T23:00:00+00:00", "value": "3"}

@@ -1,0 +1,72 @@
+.
+├── AUTHORS.md
+├── CHANGELOG.md
+├── LICENSE.md
+├── NEWS.md
+├── NOTES.md
+├── README.md
+├── etc
+│   ├── app
+│   │   ├── er_relationships.txt
+│   │   ├── metadata.yaml
+│   │   ├── vega_bar_chart.vega
+│   │   ├── vega_embed_footer.viz
+│   │   ├── vega_embed_header.viz
+│   │   ├── vega_line_chart.vega
+│   │   └── vega_scatter_chart.vega
+│   ├── cron
+│   │   └── crontab.txt
+│   ├── pipeline
+│   │   ├── config.mk
+│   │   ├── macros.mk
+│   │   ├── setup.mk.txt
+│   │   └── unit-test.mk
+│   ├── server
+│   │   ├── requirements.txt
+│   │   └── settings.txt
+│   ├── sql
+│   │   └── header.sql
+│   └── test
+│       ├── FILE_005_001_query_001.csv
+│       ├── FILE_005_001_query_001.sql
+│       ├── directory_listing.txt
+│       ├── file_001.csv
+│       ├── file_002.csv
+│       ├── file_003.csv
+│       ├── file_003a.csv
+│       ├── file_004.csv
+│       ├── file_004.xlsx
+│       ├── file_005.csv
+│       ├── load
+│       │   ├── FILE_005_001_query_001.json
+│       │   ├── FILE_005_001_query_001_nl.json
+│       │   └── split-file_004
+│       │       ├── file_004_000.csv
+│       │       └── file_004_001.csv
+│       ├── logfile_2022-01-14.log
+│       ├── test.db
+│       └── test.db.bak
+├── makefile
+├── metrics.code-workspace
+├── opt
+│   ├── local
+│   │   ├── metadata.yaml
+│   │   ├── online_retail.db
+│   │   ├── requirements.txt
+│   │   └── settings.txt
+│   └── sqlite3
+│       └── sha1.dylib
+└── svc
+    ├── db
+    │   ├── metrics.db
+    │   ├── metrics_mart.db
+    │   └── online_retail.db
+    ├── load
+    │   ├── metrics
+    │   │   └── discrete
+    │   │       └── load.csv
+    │   └── online_retail_II_-_Year_2010-2011.csv
+    └── source
+        └── online_retail_II.xlsx
+
+18 directories, 51 files

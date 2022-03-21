@@ -30,22 +30,37 @@ uninstall-homebrew:
 brew uninstall <package>
 
 install-homebrew: 
-brew install coreutils zlib tree gawk sqlite aspell graphviz imagemagick makefile2graph xmlto git datamash pandoc xsv
+brew install coreutils zlib openssl readline sqlite3 xz tree gawk sqlite aspell graphviz imagemagick makefile2graph xmlto git datamash pandoc xsv
 
 # Setup Python environment
 brew install pyenv
 
-# identify the current python version: https://www.python.org/downloads/ (e.g. 3.10.1 on 2021-12-15)
-pyenv install 3.9.0
-pyenv global 3.9.0
+# identify the current python version: https://www.python.org/downloads/ (e.g. 3.10.3 on 2022-03-21)
+# identify the current python version in pyenv: pyenv install --list
+pyenv install 3.10.2
+pyenv global 3.10.2
 pyenv version
 #echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n eval "$(pyenv init -)"\nfi' >> ~/.zshrc
 which python
 pip -V
 python3 -m pip install --upgrade pip
-python3 -m pip install makefile2dot pygraphviz eralchemy csvkit sqlite-utils datasette datasette-vega
 
-pip install --upgrade makefile2dot pygraphviz eralchemy csvkit sqlite-utils \
+
+# Setting the default python version for a local project directory.
+# This will create a .python-version file specifying the version pf python
+cd <path/to/project/directory/>
+pyenv local 3.10.2
+pyenv version --> `3.10.2 (set by /Users/brianmcmillan/Documents/GitHub/metrics_mart/.python-version)`
+pyenv virtualenv 3.10.2  metrics_mart
+pyenv virtualenv 3.10.2  metrics_mart
+pyenv which python --> `/Users/brianmcmillan/.pyenv/versions/metrics_mart/bin/python`
+pyenv which pip --> `/Users/brianmcmillan/.pyenv/versions/metrics_mart/bin/pip`
+
+# Install the required python packages
+python -m pip install --upgrade pip
+python -m pip install makefile2dot pygraphviz eralchemy csvkit sqlite-utils datasette datasette-vega
+
+python -m pip install --upgrade makefile2dot pygraphviz eralchemy csvkit sqlite-utils \
 datasette datasette-vega datasette-cluster-map datasette-copyable datasette-pretty-json \
 datasette-yaml
 
