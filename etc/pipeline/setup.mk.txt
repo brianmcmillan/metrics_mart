@@ -39,22 +39,32 @@ brew install pyenv
 # identify the current python version in pyenv: pyenv install --list
 pyenv install 3.10.2
 pyenv global 3.10.2
+pyenv version --> 3.10.2 (set by /Users/brianmcmillan/.pyenv/version)
+which python --> /Users/brianmcmillan/.pyenv/shims/python
+
+
+
 #echo -e 'if command -v pyenv 1>/dev/null 2>&1; then\n eval "$(pyenv init -)"\nfi' >> ~/.zshrc
-which python
-pip -V
-python3 -m pip install --upgrade pip
+#which python
+#pip -V
+#python3 -m pip install --upgrade pip
 
 
 # Setting the default python version for a local project directory.
 # This will create a .python-version file specifying the version pf python
 cd <path/to/project/directory/>
+pyenv virtualenv 3.10.2  makefile_software
+pyenv local makefile_software
+
+
 
 pyenv local 3.10.2
-pyenv version --> `3.10.2 (set by /Users/brianmcmillan/Documents/GitHub/metrics_mart/.python-version)`
-pyenv virtualenv 3.10.2  metrics_mart
-pyenv virtualenv 3.10.2  metrics_mart
-pyenv which python --> `/Users/brianmcmillan/.pyenv/versions/metrics_mart/bin/python`
-pyenv which pip --> `/Users/brianmcmillan/.pyenv/versions/metrics_mart/bin/pip`
+pyenv version --> 3.10.2 (set by /Users/brianmcmillan/Documents/GitHub/makefile_software/.python-version)
+pyenv which python --> /Users/brianmcmillan/.pyenv/versions/makefile_software/bin/python
+
+
+
+pyenv which pip --> /Users/brianmcmillan/.pyenv/versions/makefile_software/bin/pip
 
 # Install the required python packages
 python -m pip install --upgrade pip
