@@ -42,7 +42,6 @@ unit-tests: mock-uninstalldirs mock-data test-macro ## Run unit tests
 .FORCE:
 
 ################################################################################
-# Configuration and utilities                                                               #
 ################################################################################
 installdirs: ## Creates the project directories.
 	@echo $(DTS)    [INFO] - Executing $@
